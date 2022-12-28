@@ -19,3 +19,20 @@ module Route =
 type ITodosApi =
     { getTodos: unit -> Async<Todo list>
       addTodo: Todo -> Async<Todo> }
+
+
+
+// Based on Enterprise Tic-Tac-Toe Talk @ 14.55 (https://vimeo.com/131196782)
+// Make UI life easier by explicitly returning changes with each move
+
+module Dto =
+    type Input =
+        | Left
+        | Right
+        | Up
+        | Down
+        | Action
+        | Back
+        | Start
+
+    
