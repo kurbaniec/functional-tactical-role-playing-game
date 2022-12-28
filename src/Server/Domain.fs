@@ -1,5 +1,7 @@
 ﻿module Domain
 
+// open System
+
 
 
 
@@ -43,11 +45,76 @@ type Action = {
     value: ActionValue
     distance: Distance
     applicable: Player
+    // fn: ActionFn
 }
 
+type Row = Row of int
+type Col = Col of int
+type CellPosition = Row * Col
+
+type CharacterId = Guid
+
+
+// TODO: Action / Context
 type Character = {
+    id: CharacterId
     name: string
-
+    // pos: CellPosition
 }
+
+type Occupied = Option<CharacterId>
+type Tile =
+    |Land of Occupied
+    |Water of Occupied
+
+type Board = Map<Row, Map<Col, Tile>>
+
+type GamePhase =
+    | Start
+    | Player1Move
+    | Player1Action
+    | Player2Move
+    | Player2Action
+    | Player1Wins
+    | Player2Wins
+
+
+type Characters = Map<CharacterId, Character>
+
+type GameState = {
+    characters: Characters
+    board: Board
+}
+
+type PlayerMove = {
+    state: GameState
+    // cursor: Cursor | CursorPos
+    // character: Option<CharacterId>
+}
+
+type PlayerMoveResult =
+    | CursorUpdate
+    | ShowCharacterMovePath
+    | MoveCharacter
+    | HideCharacterMovePath
+    | InvalidCharacterMovePath
+    | ShowCharacterInfo
+    | AllCharactersMoved
+
+type PlayerAction = {
+    state: GameState
+    // cursor: Cursor
+    // context menu ?
+}
+
+type PlacerActionResult =
+    | CursorUpdate
+    | ContextUpdate
+    | ShowCharacterActionPath
+    | HideCharacterActionPath
+    | ShowActionInfo
+
+
+
 
 
