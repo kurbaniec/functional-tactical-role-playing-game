@@ -1,6 +1,8 @@
 module Index
 
 open Elmish
+open Fable.Core
+open Fable.Core.JS
 open Fable.Remoting.Client
 open Shared
 
@@ -12,15 +14,37 @@ type Msg =
     | AddTodo
     | AddedTodo of Todo
 
+
+let kek =
+    let a = 2
+    ()
+
+open Fable.Core.JsInterop
+
+type IScene =
+    abstract createScene: unit -> unit
+    abstract triggerAlert: message:string -> unit
+
+[<ImportAll("./scene.js")>]
+let sceneJs: IScene = jsNative
+
 let todosApi =
     Remoting.createApi ()
     |> Remoting.withRouteBuilder Route.builder
     |> Remoting.buildProxy<ITodosApi>
 
+console.log("here 2")
+
 let init () : Model * Cmd<Msg> =
     let model = { Todos = []; Input = "" }
 
+    console.log("here")
+    sceneJs.createScene()
+    console.log("here")
+
     let cmd = Cmd.OfAsync.perform todosApi.getTodos () GotTodos
+
+
 
     model, cmd
 
@@ -72,14 +96,6 @@ let containerBox (model: Model) (dispatch: Msg -> unit) =
                             prop.placeholder "What needs to be done?"
                             prop.onChange (fun x -> SetInput x |> dispatch)
                         ]
-                    ]
-                ]
-                Bulma.control.p [
-                    Bulma.button.a [
-                        color.isPrimary
-                        prop.disabled (Todo.isValid model.Input |> not)
-                        prop.onClick (fun _ -> dispatch AddTodo)
-                        prop.text "Add+"
                     ]
                 ]
             ]

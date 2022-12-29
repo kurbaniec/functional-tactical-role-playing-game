@@ -36,7 +36,7 @@ let value (ActionValue v) = v
 type ApplicableTo = Self|SelfAndAllies|Enemies
 
 
-type Player = Player1|Player2
+
 
 
 type Attack = {
@@ -62,8 +62,6 @@ type Actions = List<Action>
 
 type CharacterId = Guid
 
-
-// TODO: Action / Context
 type Character = {
     id: CharacterId
     name: string
@@ -82,30 +80,53 @@ type Col = Col of int
 type CellPosition = Row * Col
 type Board = Map<Row, Map<Col, Tile>>
 
-type GamePhase =
-    | Start
-    | Player1Move
+
+
+
+type Characters = Map<CharacterId, Character>
+
+type GameOverview = {
+    characters: Characters
+    board: Board
+}
+
+type Start = {
+    rows: int
+    cols: int
+}
+
+type Cursor = {
+    row: int
+    col: int
+}
+
+type Player = Player1|Player2
+
+type Oversee = {
+    player: Player
+    cursor: Cursor
+}
+
+type PlayerMove = {
+    player: Player
+    cursor: Cursor
+    character: Character
+}
+
+
+
+type GameState =
+    | Start of Start
+    | Player1Oversee of Oversee * GameOverview
+    | Player1Move of PlayerMove * GameOverview
     | Player1Action
-    | Player2Move
+    | Player2Oversee of PlayerMove * GameOverview
+    | Player2Move of Oversee * GameOverview
     | Player2Action
     | Player1Wins
     | Player2Wins
 
 
-type Characters = Map<CharacterId, Character>
-
-type GameState = {
-    characters: Characters
-    board: Board
-}
-
-
-
-type PlayerMove = {
-    state: GameState
-    // cursor: Cursor | CursorPos
-    // character: Option<CharacterId>
-}
 
 type PlayerMoveResult =
     | CursorUpdate
@@ -117,7 +138,7 @@ type PlayerMoveResult =
     | AllCharactersMoved
 
 type PlayerAction = {
-    state: GameState
+    state: GameOverview
     // cursor: Cursor
     // context menu ?
 }
