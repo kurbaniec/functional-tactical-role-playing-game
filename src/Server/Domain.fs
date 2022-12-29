@@ -2,10 +2,6 @@
 
 // open System
 
-
-
-
-
 type Distance = Distance of int
 
 module Distance =
@@ -23,7 +19,12 @@ module MovementType =
         | Mount -> mountDistance.Value
         | Fly -> flyDistance.Value
 
-type ActionType = Axe|Sword|Lance|Bow|Heal
+type Movement = {
+    t: MovementType
+    distance: Distance
+}
+
+type CharacterClass = Axe|Sword|Lance|Bow|Heal
 // type ActionValue = Damage of int|Heal of int
 // let value (v: ActionValue) =
 //     match v with
@@ -32,25 +33,32 @@ type ActionType = Axe|Sword|Lance|Bow|Heal
 type ActionValue = ActionValue of int
 let value (ActionValue v) = v
 
+type ApplicableTo = Self|SelfAndAllies|Enemies
+
 
 type Player = Player1|Player2
 
-type Movement = {
-    t: MovementType
-    distance: Distance
-}
 
-type Action = {
-    t: ActionType
+type Attack = {
     value: ActionValue
     distance: Distance
-    applicable: Player
-    // fn: ActionFn
+    applicable: ApplicableTo
 }
 
-type Row = Row of int
-type Col = Col of int
-type CellPosition = Row * Col
+type Heal = {
+    value: ActionValue
+    distance: Distance
+    applicable: ApplicableTo
+}
+
+type Defend = {
+    value: ActionValue
+    distance: Distance
+    applicable: ApplicableTo
+}
+
+type Action = Attack of Attack|Heal of Heal|Defend of Defend
+type Actions = List<Action>
 
 type CharacterId = Guid
 
@@ -59,7 +67,9 @@ type CharacterId = Guid
 type Character = {
     id: CharacterId
     name: string
-    // pos: CellPosition
+    classification: CharacterClass
+    actions: Actions
+    movement: Movement
 }
 
 type Occupied = Option<CharacterId>
@@ -67,6 +77,9 @@ type Tile =
     |Land of Occupied
     |Water of Occupied
 
+type Row = Row of int
+type Col = Col of int
+type CellPosition = Row * Col
 type Board = Map<Row, Map<Col, Tile>>
 
 type GamePhase =
@@ -85,6 +98,8 @@ type GameState = {
     characters: Characters
     board: Board
 }
+
+
 
 type PlayerMove = {
     state: GameState
