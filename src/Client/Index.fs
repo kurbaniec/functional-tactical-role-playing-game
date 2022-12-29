@@ -33,7 +33,7 @@ let todosApi =
     |> Remoting.withRouteBuilder Route.builder
     |> Remoting.buildProxy<ITodosApi>
 
-console.log("here 2")
+console.log("here 3")
 
 let init () : Model * Cmd<Msg> =
     let model = { Todos = []; Input = "" }
@@ -103,34 +103,40 @@ let containerBox (model: Model) (dispatch: Msg -> unit) =
     ]
 
 let view (model: Model) (dispatch: Msg -> unit) =
-    Bulma.hero [
-        hero.isFullHeight
-        color.isPrimary
-        prop.style [
-            style.backgroundSize "cover"
-            style.backgroundImageUrl "https://unsplash.it/1200/900?random"
-            style.backgroundPosition "no-repeat center center fixed"
-        ]
+    Bulma.navbar [
         prop.children [
-            Bulma.heroHead [
-                Bulma.navbar [
-                    Bulma.container [ navBrand ]
-                ]
-            ]
-            Bulma.heroBody [
-                Bulma.container [
-                    Bulma.column [
-                        column.is6
-                        column.isOffset3
-                        prop.children [
-                            Bulma.title [
-                                text.hasTextCentered
-                                prop.text "safe_test"
-                            ]
-                            containerBox model dispatch
-                        ]
-                    ]
-                ]
-            ]
+
         ]
     ]
+    // ()
+    // Bulma.hero [
+    //     hero.isFullHeight
+    //     color.isPrimary
+    //     prop.style [
+    //         style.backgroundSize "cover"
+    //         style.backgroundImageUrl "https://unsplash.it/1200/900?random"
+    //         style.backgroundPosition "no-repeat center center fixed"
+    //     ]
+    //     prop.children [
+    //         Bulma.heroHead [
+    //             Bulma.navbar [
+    //                 Bulma.container [ navBrand ]
+    //             ]
+    //         ]
+    //         Bulma.heroBody [
+    //             Bulma.container [
+    //                 Bulma.column [
+    //                     column.is6
+    //                     column.isOffset3
+    //                     prop.children [
+    //                         Bulma.title [
+    //                             text.hasTextCentered
+    //                             prop.text "safe_test"
+    //                         ]
+    //                         containerBox model dispatch
+    //                     ]
+    //                 ]
+    //             ]
+    //         ]
+    //     ]
+    // ]
