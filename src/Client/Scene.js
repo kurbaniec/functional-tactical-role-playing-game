@@ -11,9 +11,9 @@ import {
 
 function createScene() {
     console.log("creating scene...")
-    const canvas = document.createElement("canvas")
-    canvas.id = "gameCanvas"
-    document.body.appendChild(canvas)
+    const canvas = document.getElementById("map-canvas")
+    // canvas.id = "gameCanvas"
+    // document.body.appendChild(canvas)
 
     const engine = new Engine(canvas)
     const scene = new Scene(engine)
