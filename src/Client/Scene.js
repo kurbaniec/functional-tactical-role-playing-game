@@ -1,7 +1,7 @@
 import {
     ArcRotateCamera, Color3,
     Engine,
-    HemisphericLight,
+    HemisphericLight, KeyboardEventTypes,
     MeshBuilder, MultiMaterial,
     Scene,
     StandardMaterial, SubMesh,
@@ -74,7 +74,35 @@ function createScene() {
     cursorMaterial.alpha = 0.7;
     cursor.material = cursorMaterial;
 
+    function moveCursor(x, z) {
+        cursor.position.addInPlace(new Vector3(x, 0, z));
+    }
 
+    scene.onKeyboardObservable.add((kbInfo) => {
+        if (kbInfo.type === KeyboardEventTypes.KEYDOWN) return;
+        // console.log(kbInfo.event);
+        switch (kbInfo.event.keyCode) {
+            case 87: // W
+                console.log("Pressed W");
+                moveCursor(0, 1);
+                break;
+            case 83: // S
+                console.log("Pressed S");
+                moveCursor(0, -1);
+                break;
+            case 65: // A
+                console.log("Pressed A");
+                moveCursor(-1, 0);
+                break;
+            case 68: // D
+                console.log("Pressed D");
+                moveCursor(1, 0);
+                break;
+            case 32: // Space
+                console.log("Pressed Space");
+                break;
+        }
+    });
 
 
     engine.runRenderLoop(() => {
