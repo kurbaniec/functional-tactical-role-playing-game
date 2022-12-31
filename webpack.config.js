@@ -101,7 +101,7 @@ module.exports = function(env, arg) {
             host: '0.0.0.0',
             port: config.devServerPort,
             proxy: config.devServerProxy,
-            hot: true,
+            hot: false,
             historyApiFallback: true
         },
         // - sass-loaders: transforms SASS/SCSS into JS

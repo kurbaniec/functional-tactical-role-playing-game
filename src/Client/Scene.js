@@ -30,7 +30,7 @@ function createScene() {
 
     const tiledGround = new MeshBuilder
         .CreateTiledGround("Tiled Ground", {
-            xmin: -3, zmin: -3, xmax: 3, zmax: 3, subdivisions: grid
+            xmin: -4, zmin: -4, xmax: 4, zmax: 4, subdivisions: grid
         });
 
     //Create the multi material
@@ -64,6 +64,18 @@ function createScene() {
             base += tileIndicesLength;
         }
     }
+
+    console.log(tiledGround.position)
+    const cursor = MeshBuilder.CreateBox("cursor", { depth: 1, width: 1, height: 0.2 }, scene);
+    cursor.position = new Vector3(0.5, 0.1, 0.5);
+    const cursorMaterial = new StandardMaterial("cursormat", scene);
+    cursorMaterial.diffuseColor = Color3.Red();
+    // cursorMaterial.emissiveColor = new Color3(0.1, 0.1, 0.1);
+    cursorMaterial.alpha = 0.7;
+    cursor.material = cursorMaterial;
+
+
+
 
     engine.runRenderLoop(() => {
         scene.render()

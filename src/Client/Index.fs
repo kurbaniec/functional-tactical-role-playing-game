@@ -25,7 +25,7 @@ type IScene =
     abstract createScene: unit -> unit
     abstract triggerAlert: message:string -> unit
 
-[<ImportAll("./scene.js")>]
+[<ImportAll("./Scene.js")>]
 let sceneJs: IScene = jsNative
 
 let todosApi =
