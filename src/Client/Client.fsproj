@@ -14,6 +14,7 @@
         <ProjectReference Include="..\Shared\Shared.fsproj" />
     </ItemGroup>
     <ItemGroup>
+      <Content Include="GameUI.js" />
       <Content Include="Scene.js" />
     </ItemGroup>
     <Import Project="..\..\.paket\Paket.Restore.targets" />

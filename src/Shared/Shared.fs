@@ -25,6 +25,7 @@ type ITodosApi =
 // Based on Enterprise Tic-Tac-Toe Talk @ 14.55 (https://vimeo.com/131196782)
 // Make UI life easier by explicitly returning changes with each move
 
+
 module DomainDto =
 
     type TileDto =
@@ -50,7 +51,7 @@ module DomainDto =
         { id: string
           name: string
           classification: CharacterClassDto
-          properties: Map<string, Object> }
+          properties: System.Collections.Generic.Dictionary<string, Object> }
 
     type PlaceCharacterDto =
         { player: PlayerDto
@@ -75,7 +76,7 @@ module DomainDto =
 
         interface IResult
 
-    
+
 
 
     type Input =
