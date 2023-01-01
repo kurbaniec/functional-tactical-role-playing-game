@@ -80,9 +80,6 @@ type Col = Col of int
 type CellPosition = Row * Col
 type Board = Map<Row, Map<Col, Tile>>
 
-
-
-
 type Characters = Map<CharacterId, Character>
 
 type GameOverview = {
@@ -95,21 +92,19 @@ type Start = {
     cols: int
 }
 
-type Cursor = {
-    row: int
-    col: int
-}
+// type Cursor = {
+//     row: int
+//     col: int
+// }
 
 type Player = Player1|Player2
 
 type Oversee = {
     player: Player
-    cursor: Cursor
 }
 
 type PlayerMove = {
     player: Player
-    cursor: Cursor
     character: Character
 }
 
