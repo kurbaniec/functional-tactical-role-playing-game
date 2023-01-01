@@ -10,6 +10,8 @@ class GameUI {
         const properties = char.properties
         console.log(properties)
         console.log(properties.get("1"))
+
+        console.log(startResult.constructor.name);
     }
 }
 

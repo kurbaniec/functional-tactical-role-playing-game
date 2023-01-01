@@ -184,3 +184,21 @@ let test: StartResult =
     }
 
 gameUI.start test
+
+// Check for concrete type
+// See: https://stackoverflow.com/q/5368655
+// See: https://stackoverflow.com/a/5369315
+let test2 (kek: IResult) =
+    match box kek with
+    | :? StartResult ->
+        printfn "start result"
+    | _ -> printfn "kek"
+
+let test3 (kek: IResult) =
+    match kek :> obj with
+    | :? StartResult ->
+        printfn("start result")
+    | _ -> printfn "kek"
+
+test2 test
+test3 test
