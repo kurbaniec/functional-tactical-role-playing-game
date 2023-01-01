@@ -175,13 +175,10 @@ let char: PlaceCharacterDto =
 
     }
 
-
 let test: StartResult =
     { id = "test"
-      board = [ [ TileDto.Land; TileDto.Water ] ]
-      characters = [ char ]
-
-    }
+      board = System.Collections.Generic.List([ System.Collections.Generic.List([ TileDto.Land; TileDto.Water ]) ])
+      characters = System.Collections.Generic.List([ char ]) }
 
 gameUI.start test
 
@@ -190,14 +187,12 @@ gameUI.start test
 // See: https://stackoverflow.com/a/5369315
 let test2 (kek: IResult) =
     match box kek with
-    | :? StartResult ->
-        printfn "start result"
+    | :? StartResult -> printfn "start result"
     | _ -> printfn "kek"
 
 let test3 (kek: IResult) =
     match kek :> obj with
-    | :? StartResult ->
-        printfn("start result")
+    | :? StartResult -> printfn ("start result")
     | _ -> printfn "kek"
 
 test2 test

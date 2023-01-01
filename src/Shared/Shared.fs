@@ -26,13 +26,15 @@ type ITodosApi =
 // Make UI life easier by explicitly returning changes with each move
 
 
+// Use System collections for native js types
+// See: https://fable.io/docs/dotnet/compatibility.html
 module DomainDto =
 
     type TileDto =
         | Land = 0
         | Water = 1
 
-    type BoardDto = List<List<TileDto>>
+    type BoardDto = System.Collections.Generic.List<System.Collections.Generic.List<TileDto>>
 
     type CharacterClassDto =
         | Axe = 0
@@ -72,7 +74,7 @@ module DomainDto =
     type StartResult =
         { id: string
           board: BoardDto
-          characters: List<PlaceCharacterDto> }
+          characters: System.Collections.Generic.List<PlaceCharacterDto> }
 
         interface IResult
 

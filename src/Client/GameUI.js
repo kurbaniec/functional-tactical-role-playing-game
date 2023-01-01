@@ -5,7 +5,7 @@ class GameUI {
         console.log("Baum");
         console.log(startResult);
 
-        const char = startResult.characters.head.character
+        const char = startResult.characters[0].character
         console.log(char);
         const properties = char.properties
         console.log(properties)
