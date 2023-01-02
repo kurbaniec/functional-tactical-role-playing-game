@@ -89,3 +89,11 @@ module DomainDto =
         | Action
         | Back
         | Start
+
+
+
+open DomainDto
+
+type IGameApi =
+    { start: unit -> Async<StartResult>
+    }

@@ -13,6 +13,7 @@ type Msg =
     | SetInput of string
     | AddTodo
     | AddedTodo of Todo
+    | Start of StartResult
 
 
 let kek =
@@ -31,7 +32,7 @@ let sceneJs: IScene = jsNative
 let todosApi =
     Remoting.createApi ()
     |> Remoting.withRouteBuilder Route.builder
-    |> Remoting.buildProxy<ITodosApi>
+    |> Remoting.buildProxy<IGameApi>
 
 // console.log ("here 3")
 
@@ -44,22 +45,33 @@ let init () : Model * Cmd<Msg> =
     printfn "here"
     // console.log ("here")
 
-    let cmd = Cmd.OfAsync.perform todosApi.getTodos () GotTodos
+    // let cmd = Cmd.OfAsync.perform todosApi.getTodos () GotTodos
+    let cmd = Cmd.none
 
 
+    let test = Cmd.OfAsync.perform todosApi.start () Start
 
-    model, cmd
+    model, test
 
 let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
     match msg with
+    | Start startResult ->
+        printfn $"%A{startResult}"
+        match startResult :> obj with
+            | :? StartResult -> printfn ("| start result")
+            | _ -> printfn "| kek"
+
+        model, Cmd.none
+
     | GotTodos todos -> { model with Todos = todos }, Cmd.none
     | SetInput value -> { model with Input = value }, Cmd.none
     | AddTodo ->
         let todo = Todo.create model.Input
 
-        let cmd = Cmd.OfAsync.perform todosApi.addTodo todo AddedTodo
+        //let cmd = Cmd.OfAsync.perform todosApi.addTodo todo AddedTodo
 
-        { model with Input = "" }, cmd
+        // { model with Input = "" }, cmd
+        { model with Input = "" }, Cmd.none
     | AddedTodo todo -> { model with Todos = model.Todos @ [ todo ] }, Cmd.none
 
 open Feliz

@@ -10,10 +10,10 @@ let server = testList "Server" [
         let validTodo = Todo.create "TODO"
         let expectedResult = Ok ()
 
-        let result = Storage.addTodo validTodo
+        let result = Storage2.addTodo validTodo
 
         Expect.equal result expectedResult "Result should be ok"
-        Expect.contains Storage.todos validTodo "Storage should contain new todo"
+        Expect.contains Storage2.todos validTodo "Storage should contain new todo"
 ]
 
 let all =

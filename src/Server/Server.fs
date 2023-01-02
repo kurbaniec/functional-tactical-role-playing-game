@@ -5,8 +5,9 @@ open Fable.Remoting.Giraffe
 open Saturn
 
 open Shared
+open Shared.DomainDto
 
-module Storage =
+module Storage2 =
     let todos = ResizeArray()
 
     let addTodo (todo: Todo) =
@@ -17,27 +18,64 @@ module Storage =
             Error "Invalid todo"
 
     do
-        addTodo (Todo.create "Create new SAFE project")
-        |> ignore
+        addTodo (Todo.create "Create new SAFE project") |> ignore
 
         addTodo (Todo.create "Write your app") |> ignore
         addTodo (Todo.create "Ship it !!!") |> ignore
 
 let todosApi =
-    { getTodos = fun () -> async { return Storage.todos |> List.ofSeq }
+    { getTodos = fun () -> async { return Storage2.todos |> List.ofSeq }
       addTodo =
         fun todo ->
             async {
                 return
-                    match Storage.addTodo todo with
+                    match Storage2.addTodo todo with
                     | Ok () -> todo
                     | Error e -> failwith e
+            } }
+
+module Storage =
+    let games =
+        System.Collections.Concurrent.ConcurrentDictionary<System.Guid, System.Object>()
+
+let gameApi =
+    { start =
+        fun () ->
+            async {
+                let words = System.Collections.Generic.Dictionary<string, System.Object>()
+                words.Add("1", "book")
+                words.Add("2", 2)
+
+                let c: CharacterDto =
+                    { id = ""
+                      name = ""
+                      classification = CharacterClassDto.Axe
+                      properties = words
+
+                    }
+
+                let char: PlaceCharacterDto =
+                    { player = PlayerDto.Player1
+                      character = c
+                      pos = { row = 1; col = 2 }
+
+                    }
+
+                let test: StartResult =
+                    { id = "test"
+                      board =
+                        System.Collections.Generic.List(
+                            [ System.Collections.Generic.List([ TileDto.Land; TileDto.Water ]) ]
+                        )
+                      characters = System.Collections.Generic.List([ char ]) }
+
+                return test
             } }
 
 let webApp =
     Remoting.createApi ()
     |> Remoting.withRouteBuilder Route.builder
-    |> Remoting.fromValue todosApi
+    |> Remoting.fromValue gameApi
     |> Remoting.buildHttpHandler
 
 let app =
