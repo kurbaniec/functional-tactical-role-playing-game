@@ -48,15 +48,14 @@ module DomainDto =
 
     type PlayerDto =
         | Player1 = 0
-        | Player2 = 0
+        | Player2 = 1
 
     type CharacterDto =
         { id: string
           name: string
           classification: CharacterClassDto
           properties: System.Collections.Generic.Dictionary<string, Object>
-          position: Option<PositionDto>
-          }
+          position: Option<PositionDto> }
 
 
     type PlaceCharacterDto =
@@ -68,7 +67,8 @@ module DomainDto =
         interface
         end
 
-    type IResult = interface
+    type IResult =
+        interface
         end
 
     type StartMessage() =
@@ -77,8 +77,7 @@ module DomainDto =
     type StartResult =
         { id: string
           board: BoardDto
-          characters: ResizeArray<CharacterDto>
-          }
+          characters: ResizeArray<CharacterDto> }
 
         interface IResult
 
@@ -89,19 +88,19 @@ module DomainDto =
 
 
 
-    // type Input =
-    //     | Left
-    //     | Right
-    //     | Up
-    //     | Down
-    //     | Action
-    //     | Back
-    //     | Start
+// type Input =
+//     | Left
+//     | Right
+//     | Up
+//     | Down
+//     | Action
+//     | Back
+//     | Start
 
 
 
 open DomainDto
 
 type IGameApi =
-    { start: unit -> Async<unit>
-    }
+    { start: unit -> Async<string * PlayerDto>
+      poll: string -> PlayerDto -> Async<Option<IResult>> }

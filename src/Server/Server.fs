@@ -68,6 +68,14 @@ module Storage =
             | Player1 -> player1Results[ game.id ].Enqueue(resultDto)
             | Player2 -> player2Results[ game.id ].Enqueue(resultDto)
 
+    let dequeResult (player: PlayerDto) (gameId: GameId) =
+        let queue =
+            match player with
+            | PlayerDto.Player1 -> player1Results[gameId]
+            | PlayerDto.Player2 -> player2Results[gameId]
+            | _ -> System.ArgumentOutOfRangeException() |> raise
+
+        if queue.Count = 0 then None else queue.Dequeue() |> Some
 
 let gameApi =
     { start =
@@ -76,8 +84,17 @@ let gameApi =
                 let results, game = Game.newGame ()
                 Storage.createGame game
                 List.iter (fun r -> Storage.enqueueResult r game) results
-                ()
-            } }
+                return (game.id.ToString(), PlayerDto.Player1)
+            }
+
+      poll =
+          fun (id: string) (player: PlayerDto) ->
+              async {
+                  return Some { player = PlayerDto.Player1 }
+
+                  // let id = System.Guid.Parse(id)
+                  // return Storage.dequeResult player id
+              } }
 
 let webApp =
     Remoting.createApi ()

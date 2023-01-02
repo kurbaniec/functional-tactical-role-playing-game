@@ -208,9 +208,22 @@ let test3 (kek: IResult) =
 test2 test
 test3 test*)
 
+// See: https://github.com/fable-compiler/Fable/issues/2115
 
 async {
-    let! res = todosApi.start()
+    let! id, player = todosApi.start()
     printf "Received reply"
+    do! Async.Sleep(3000)
+    printf "Waited a bit"
+    printf "hey"
+    let! res = todosApi.poll id player
+    printf "wow"
+    match res with
+    | Some r ->
+        JS.console.log(r)
+        printfn $"%A{r}"
+    | _ -> printfn "Nothing"
+    printfn "Baum"
+    failwith "hey"
 }
-|> Async.StartImmediate
+|> Async.StartAsPromise
