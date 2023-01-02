@@ -58,12 +58,12 @@ let intoCharacterDto (c: Character) (b: Option<Board>) : CharacterDto =
       properties = properties
       position = position }
 
-let intoPlayerDto (player: Player): PlayerDto =
+let intoPlayerDto (player: Player) : PlayerDto =
     match player with
     | Player1 -> PlayerDto.Player1
     | Player2 -> PlayerDto.Player2
 
-let intoStartDto (gid: GameId) (game: GameOverview) : StartResult =
+let intoStartDto (gid: GameId) (game: GameOverview) =
     let boardDto = intoBoardDto game.board
 
     let characters =
@@ -71,13 +71,14 @@ let intoStartDto (gid: GameId) (game: GameOverview) : StartResult =
         |> ResizeArray
         |> ResizeArray.map (fun c -> intoCharacterDto c (Some game.board))
 
-    { id = gid.ToString()
-      board = boardDto
-      characters = characters }
+    StartResult
+        { id = gid.ToString()
+          board = boardDto
+          characters = characters }
 
 
 let intoPlayerOverseeDto (player: Player) (game: GameOverview) =
-    { player = intoPlayerDto player }
+    PlayerOverseeResult { player = intoPlayerDto player }
 
 
 
@@ -86,4 +87,5 @@ let intoDto (gameResult: GameResult) (game: GameOverview) =
         match gameResult with
         | Start guid -> intoStartDto guid game
         | PlayerOversee player -> intoPlayerOverseeDto player game
+
     res

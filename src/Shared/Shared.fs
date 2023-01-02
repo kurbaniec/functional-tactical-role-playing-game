@@ -67,24 +67,24 @@ module DomainDto =
         interface
         end
 
-    type IResult =
-        interface
-        end
+
 
     type StartMessage() =
         interface IMessage
+
+
 
     type StartResult =
         { id: string
           board: BoardDto
           characters: ResizeArray<CharacterDto> }
 
-        interface IResult
-
     type PlayerOverseeResult =
         { player: PlayerDto }
 
-        interface IResult
+    type IResult =
+        | StartResult of StartResult
+        | PlayerOverseeResult of PlayerOverseeResult
 
 
 

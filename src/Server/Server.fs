@@ -90,10 +90,8 @@ let gameApi =
       poll =
           fun (id: string) (player: PlayerDto) ->
               async {
-                  return Some { player = PlayerDto.Player1 }
-
-                  // let id = System.Guid.Parse(id)
-                  // return Storage.dequeResult player id
+                  let id = System.Guid.Parse(id)
+                  return Storage.dequeResult player id
               } }
 
 let webApp =

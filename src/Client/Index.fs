@@ -224,6 +224,11 @@ async {
         printfn $"%A{r}"
     | _ -> printfn "Nothing"
     printfn "Baum"
-    failwith "hey"
+    let! res = todosApi.poll id player
+    match res with
+    | Some r ->
+        JS.console.log(r)
+        printfn $"%A{r}"
+    | _ -> printfn "Nothing"
 }
 |> Async.StartAsPromise
