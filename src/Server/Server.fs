@@ -1,5 +1,7 @@
 module Server
 
+open System.Collections.Generic
+open Domain.GameResult
 open Fable.Remoting.Server
 open Fable.Remoting.Giraffe
 open Saturn
@@ -40,42 +42,41 @@ type Queue<'V> = System.Collections.Generic.Queue<'V>
 type GameId = System.Guid
 
 module Storage =
-    let games = Dictionary<GameId, System.Object>()
-    let player1Results = Dictionary<GameId, Queue<IResult>>()
-    let player2Results = Dictionary<GameId, Queue<IResult>>()
+    let private games = Dictionary<GameId, Game>()
+    let private player1Results = Dictionary<GameId, Queue<IResult>>()
+    let private player2Results = Dictionary<GameId, Queue<IResult>>()
+
+    let updateGame (game: Game) : unit = games.Add(game.id, game)
+
+    let createGame (game: Game) : unit =
+        updateGame game
+        player1Results.Add(game.id, Queue())
+        player2Results.Add(game.id, Queue())
+
+    let enqueueResult (result: GameResult) (game: Game) =
+        // TODO make this more clear
+        let go = GameState.overview game.state
+        let resultDto = GameResult.intoDto result go
+        let recipient = GameResult.recipient result
+
+        match recipient with
+        | AllRecipients ->
+            player1Results[ game.id ].Enqueue(resultDto)
+            player2Results[ game.id ].Enqueue(resultDto)
+        | PlayerRecipient player ->
+            match player with
+            | Player1 -> player1Results[ game.id ].Enqueue(resultDto)
+            | Player2 -> player2Results[ game.id ].Enqueue(resultDto)
+
 
 let gameApi =
     { start =
         fun () ->
             async {
-                let words = System.Collections.Generic.Dictionary<string, System.Object>()
-                words.Add("1", "book")
-                words.Add("2", 2)
-
-                let c: CharacterDto =
-                    { id = ""
-                      name = ""
-                      classification = CharacterClassDto.Axe
-                      properties = words
-
-                    }
-
-                let char: PlaceCharacterDto =
-                    { player = PlayerDto.Player1
-                      character = c
-                      pos = { row = 1; col = 2 }
-
-                    }
-
-                let test: StartResult =
-                    { id = "test"
-                      board =
-                        System.Collections.Generic.List(
-                            [ System.Collections.Generic.List([ TileDto.Land; TileDto.Water ]) ]
-                        )
-                      characters = System.Collections.Generic.List([ char ]) }
-
-                return test
+                let results, game = Game.newGame ()
+                Storage.createGame game
+                List.iter (fun r -> Storage.enqueueResult r game) results
+                ()
             } }
 
 let webApp =

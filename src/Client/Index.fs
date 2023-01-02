@@ -47,11 +47,9 @@ let init () : Model * Cmd<Msg> =
 
     // let cmd = Cmd.OfAsync.perform todosApi.getTodos () GotTodos
     let cmd = Cmd.none
+    // let cmd = Cmd.OfAsync.perform todosApi.start () Start
 
-
-    let test = Cmd.OfAsync.perform todosApi.start () Start
-
-    model, test
+    model, cmd
 
 let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
     match msg with
@@ -168,7 +166,7 @@ let GameUI: GameUIStatic = jsNative
 let gameUI = GameUI.Create()
 
 
-let words = System.Collections.Generic.Dictionary<string, System.Object>()
+(*let words = System.Collections.Generic.Dictionary<string, System.Object>()
 words.Add("1", "book")
 words.Add("2", 2)
 
@@ -208,4 +206,11 @@ let test3 (kek: IResult) =
     | _ -> printfn "kek"
 
 test2 test
-test3 test
+test3 test*)
+
+
+async {
+    let! res = todosApi.start()
+    printf "Received reply"
+}
+|> Async.StartImmediate

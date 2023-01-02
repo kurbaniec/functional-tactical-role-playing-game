@@ -128,7 +128,6 @@ type PlayerMove = {
 
 
 type GameState =
-    | Start of Start
     | Player1Oversee of PlayerOversee * GameOverview
     | Player1Move of PlayerMove * GameOverview
     | Player1Action
@@ -137,6 +136,13 @@ type GameState =
     | Player2Action
     | Player1Wins
     | Player2Wins
+
+module GameState =
+    let overview (gs: GameState): GameOverview =
+        match gs with
+        | Player1Oversee(playerOversee, gameOverview) -> gameOverview
+        | Player1Move(playerMove, gameOverview) -> gameOverview
+        | _ -> failwith "gamestate overview"
 
 type GameId = System.Guid
 type Game = {
@@ -170,6 +176,13 @@ type GameResult =
     // | HideCharacterActionPath
     // | ShowActionInfo
 
+module GameResult =
+    type Recipient =
+    | AllRecipients | PlayerRecipient of Player
 
+    let recipient (gr: GameResult): Recipient =
+        match gr with
+        | Start _ -> AllRecipients
+        | PlayerOversee _ -> AllRecipients
 
 

@@ -38,4 +38,4 @@ let newGame (_: unit) : List<GameResult> * Game =
     let playerOversee = { player = Player1 }
     let player1Oversee = Player1Oversee(playerOversee, gameOverview)
 
-    ([ Start gid; PlayerOversee Player1 ], { id = gid; state = player1Oversee })
+    ([ Start(gid); PlayerOversee(Player1) ], { id = gid; state = player1Oversee })

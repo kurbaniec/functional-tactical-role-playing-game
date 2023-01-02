@@ -68,8 +68,7 @@ module DomainDto =
         interface
         end
 
-    type IResult =
-        interface
+    type IResult = interface
         end
 
     type StartMessage() =
@@ -104,5 +103,5 @@ module DomainDto =
 open DomainDto
 
 type IGameApi =
-    { start: unit -> Async<StartResult>
+    { start: unit -> Async<unit>
     }
