@@ -2,6 +2,7 @@ module Index
 
 open Elmish
 open Fable.Core
+open Fable.Core.JS
 open Fable.Remoting.Client
 open Shared
 open Shared.DomainDto
@@ -36,13 +37,13 @@ let todosApi =
 
 // console.log ("here 3")
 
-let init () : Model * Cmd<Msg> =
+let init2 () : Model * Cmd<Msg> =
     let model = { Todos = []; Input = "" }
 
     // console.log ("here")
-    printfn "here"
-    sceneJs.createScene ()
-    printfn "here"
+    // printfn "here"
+    // sceneJs.createScene ()
+    // printfn "here"
     // console.log ("here")
 
     // let cmd = Cmd.OfAsync.perform todosApi.getTodos () GotTodos
@@ -51,7 +52,7 @@ let init () : Model * Cmd<Msg> =
 
     model, cmd
 
-let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
+let update2 (msg: Msg) (model: Model) : Model * Cmd<Msg> =
     match msg with
     | Start startResult ->
         printfn $"%A{startResult}"
@@ -157,13 +158,56 @@ type GameUI =
     abstract start: StartResult -> unit
 
 type GameUIStatic =
-    [<Emit("new $0()")>]
-    abstract Create: unit -> GameUI
+    // [<Emit("new $0()")>]
+    abstract create: unit -> Promise<GameUI>
 
 [<Import("GameUI", "./GameUI.js")>]
 let GameUI: GameUIStatic = jsNative
 
-let gameUI = GameUI.Create()
+// let gameUI = GameUI.Create()
+
+// See: https://github.com/fable-compiler/Fable/issues/2115
+
+type GameInfo = {
+    id: string
+    player: PlayerDto
+}
+
+
+
+let init () : Promise<GameInfo> =
+    async {
+        let! id, player = todosApi.start()
+        return { id = id; player = player }
+    } |> Async.StartAsPromise
+
+let update (gameInfo: GameInfo) : Promise<Option<IResult>> =
+    async {
+        return! todosApi.poll gameInfo.id gameInfo.player
+    } |> Async.StartAsPromise
+
+let game = GameUI.create()
+
+// async {
+//
+//     printf "Started"
+// }
+// |> Async.StartAsPromise
+
+// async {
+//     let! id, player = todosApi.start()
+//     printf "Received reply"
+//     do! Async.Sleep(3000)
+//     printf "Waited a bit"
+//     printf "hey"
+//     let! res = todosApi.poll id player
+//     printf "wow"
+//     match res with
+//     | Some r ->
+//         JS.console.log(r)
+//         printfn $"%A{r}"
+// }
+// |> Async.StartAsPromise
 
 
 (*let words = System.Collections.Generic.Dictionary<string, System.Object>()
@@ -208,27 +252,4 @@ let test3 (kek: IResult) =
 test2 test
 test3 test*)
 
-// See: https://github.com/fable-compiler/Fable/issues/2115
 
-async {
-    let! id, player = todosApi.start()
-    printf "Received reply"
-    do! Async.Sleep(3000)
-    printf "Waited a bit"
-    printf "hey"
-    let! res = todosApi.poll id player
-    printf "wow"
-    match res with
-    | Some r ->
-        JS.console.log(r)
-        printfn $"%A{r}"
-    | _ -> printfn "Nothing"
-    printfn "Baum"
-    let! res = todosApi.poll id player
-    match res with
-    | Some r ->
-        JS.console.log(r)
-        printfn $"%A{r}"
-    | _ -> printfn "Nothing"
-}
-|> Async.StartAsPromise

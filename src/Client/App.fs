@@ -11,7 +11,7 @@ open Fable.Core
 
 
 
-Program.mkProgram Index.init Index.update Index.view
+Program.mkProgram Index.init2 Index.update2 Index.view
 #if DEBUG
 |> Program.withConsoleTrace
 #endif
