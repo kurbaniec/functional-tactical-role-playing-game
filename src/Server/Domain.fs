@@ -27,7 +27,7 @@ type Movement = {
     distance: Distance
 }
 
-type CharacterClass = Axe|Sword|Lance|Bow|Heal
+type CharacterClass = Axe|Sword|Lance|Bow|Support
 // type ActionValue = Damage of int|Heal of int
 // let value (v: ActionValue) =
 //     match v with
@@ -78,6 +78,12 @@ type Tile =
     |Land of Occupied
     |Water of Occupied
 
+module Tile =
+    let characterId (tile: Tile): Option<CharacterId> =
+        match tile with
+        | Land cid -> cid
+        | Water cid -> cid
+
 type Row = Row of int
 
 module Row =
@@ -93,7 +99,8 @@ type Board = Map<Row, Map<Col, Tile>>
 type Characters = Map<CharacterId, Character>
 
 type GameOverview = {
-    characters: Characters
+    player1Characters: Characters
+    player2Characters: Characters
     board: Board
 }
 
@@ -131,7 +138,11 @@ type GameState =
     | Player1Wins
     | Player2Wins
 
-
+type GameId = System.Guid
+type Game = {
+    id: GameId
+    state: GameState
+}
 
 type PlayerMoveResult =
     | CursorUpdate
@@ -151,18 +162,14 @@ type PlayerAction = {
 
 
 type GameResult =
-    | Start
-    | PlayerOversee
+    | Start of GameId
+    | PlayerOversee of Player
     // | CursorUpdate
     // | ContextUpdate
     // | ShowCharacterActionPath
     // | HideCharacterActionPath
     // | ShowActionInfo
 
-
-type Game = {
-    state: GameState
-}
 
 
 

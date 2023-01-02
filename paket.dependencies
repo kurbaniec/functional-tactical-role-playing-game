@@ -4,6 +4,7 @@ storage: none
 
 nuget Fsharp.Core ~> 6
 nuget Fable.Remoting.Giraffe
+nuget FSharpx.Collections
 nuget Saturn
 nuget Expecto
 

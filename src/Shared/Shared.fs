@@ -1,6 +1,7 @@
 namespace Shared
 
 open System
+open Microsoft.FSharp.Core
 
 type Todo = { Id: Guid; Description: string }
 
@@ -41,7 +42,7 @@ module DomainDto =
         | Sword = 1
         | Lance = 2
         | Bow = 3
-        | Heal = 4
+        | Support = 4
 
     type PositionDto = { row: int; col: int }
 
@@ -53,7 +54,10 @@ module DomainDto =
         { id: string
           name: string
           classification: CharacterClassDto
-          properties: System.Collections.Generic.Dictionary<string, Object> }
+          properties: System.Collections.Generic.Dictionary<string, Object>
+          position: Option<PositionDto>
+          }
+
 
     type PlaceCharacterDto =
         { player: PlayerDto
@@ -68,29 +72,32 @@ module DomainDto =
         interface
         end
 
-    type Start() =
+    type StartMessage() =
         interface IMessage
 
     type StartResult =
         { id: string
           board: BoardDto
-          characters: System.Collections.Generic.List<PlaceCharacterDto> }
+          characters: ResizeArray<CharacterDto>
+          }
 
         interface IResult
 
     type PlayerOverseeResult =
         { player: PlayerDto }
 
+        interface IResult
 
 
-    type Input =
-        | Left
-        | Right
-        | Up
-        | Down
-        | Action
-        | Back
-        | Start
+
+    // type Input =
+    //     | Left
+    //     | Right
+    //     | Up
+    //     | Down
+    //     | Action
+    //     | Back
+    //     | Start
 
 
 

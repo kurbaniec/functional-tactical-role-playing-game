@@ -9,6 +9,7 @@
     <Compile Include="Domain.fs" />
     <Compile Include="Board.fs" />
     <Compile Include="Game.fs" />
+    <Compile Include="GameResult.fs" />
     <Compile Include="Server.fs" />
   </ItemGroup>
   <ItemGroup>

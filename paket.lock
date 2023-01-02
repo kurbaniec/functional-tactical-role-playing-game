@@ -150,6 +150,8 @@ NUGET
       FSharp.Core (>= 4.3.4)
       Microsoft.IO.RecyclableMemoryStream (>= 1.2.2)
     FSharp.Core (6.0.3)
+    FSharpx.Collections (3.1)
+      FSharp.Core (>= 4.3.4)
     Fulma (2.16)
       Fable.Core (>= 3.2.6)
       Fable.React (>= 7.4)
