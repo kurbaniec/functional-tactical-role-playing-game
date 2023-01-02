@@ -34,9 +34,15 @@ let todosApi =
                     | Error e -> failwith e
             } }
 
+type ConcurrentDictionary<'K, 'V> = System.Collections.Concurrent.ConcurrentDictionary<'K, 'V>
+type Dictionary<'K, 'V> = System.Collections.Generic.Dictionary<'K, 'V>
+type Queue<'V> = System.Collections.Generic.Queue<'V>
+type GameId = System.Guid
+
 module Storage =
-    let games =
-        System.Collections.Concurrent.ConcurrentDictionary<System.Guid, System.Object>()
+    let games = Dictionary<GameId, System.Object>()
+    let player1Results = Dictionary<GameId, Queue<IResult>>()
+    let player2Results = Dictionary<GameId, Queue<IResult>>()
 
 let gameApi =
     { start =

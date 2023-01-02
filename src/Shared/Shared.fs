@@ -78,6 +78,8 @@ module DomainDto =
 
         interface IResult
 
+    type PlayerOverseeResult =
+        { player: PlayerDto }
 
 
 

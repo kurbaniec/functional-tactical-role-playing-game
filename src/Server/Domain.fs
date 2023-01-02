@@ -1,4 +1,7 @@
-﻿module Domain
+﻿[<AutoOpen>]
+module Domain
+
+open Shared.DomainDto
 
 // open System
 
@@ -60,7 +63,7 @@ type Defend = {
 type Action = Attack of Attack|Heal of Heal|Defend of Defend
 type Actions = List<Action>
 
-type CharacterId = Guid
+type CharacterId = System.Guid
 
 type Character = {
     id: CharacterId
@@ -76,7 +79,14 @@ type Tile =
     |Water of Occupied
 
 type Row = Row of int
+
+module Row =
+    let value (Row r) = r
+
 type Col = Col of int
+
+module Col =
+    let value (Col c) = c
 type CellPosition = Row * Col
 type Board = Map<Row, Map<Col, Tile>>
 
@@ -138,14 +148,21 @@ type PlayerAction = {
     // context menu ?
 }
 
-type PlacerActionResult =
-    | CursorUpdate
-    | ContextUpdate
-    | ShowCharacterActionPath
-    | HideCharacterActionPath
-    | ShowActionInfo
 
 
+type GameResult =
+    | Start
+    | PlayerOversee
+    // | CursorUpdate
+    // | ContextUpdate
+    // | ShowCharacterActionPath
+    // | HideCharacterActionPath
+    // | ShowActionInfo
+
+
+type Game = {
+    state: GameState
+}
 
 
 

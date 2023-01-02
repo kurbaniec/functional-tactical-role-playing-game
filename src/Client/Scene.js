@@ -121,7 +121,7 @@ function createScene() {
             console.log("polling");
         }
     }
-    polling();
+    const _ = polling();
 }
 
 function triggerAlert(message) { alert(message)}
