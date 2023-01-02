@@ -1,5 +1,6 @@
 ﻿// See: https://github.com/fable-compiler/fable3-samples/blob/main/interopFableFromJS/src/index.js
-import { init, update } from "./output/Index.js"
+import { init, update, GameInfo } from "./output/Index"
+import { DomainDto_IResult } from "./output/Shared/Shared";
 
 class GameUI {
     constructor(gameInfo) {
@@ -7,12 +8,14 @@ class GameUI {
     }
 
     static async create() {
+        /** @type {GameInfo} */
         const gameInfo = await init();
+        /** @type {DomainDto_StartResult} */
         const startInfo = await update(gameInfo);
 
+        console.log(startInfo["fields"][0].characters);
 
         console.log(gameInfo)
-        console.log(gameInfo.id)
         console.log(startInfo)
 
         return new GameUI(gameInfo)

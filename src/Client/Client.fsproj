@@ -16,6 +16,12 @@
     <ItemGroup>
       <Content Include="GameUI.js" />
       <Content Include="Scene.js" />
+      <Content Include="output\Index.js" />
+      <Content Include="output\Index.js.map" />
+      <Content Include="output\Shared\Shared.js.map" />
+      <Content Include="output\Shared\Shared.js" />
+      <Content Include="output\App.js" />
+      <Content Include="output\App.js.map" />
     </ItemGroup>
     <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
