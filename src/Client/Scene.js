@@ -112,6 +112,16 @@ function createScene() {
     window.addEventListener("resize", function () {
         engine.resize()
     })
+
+    // polling loop
+    const polling = async () => {
+        let condition = false;
+        while (!condition) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            console.log("polling");
+        }
+    }
+    polling();
 }
 
 function triggerAlert(message) { alert(message)}

@@ -99,7 +99,7 @@ type Start = {
 
 type Player = Player1|Player2
 
-type Oversee = {
+type PlayerOversee = {
     player: Player
 }
 
@@ -112,11 +112,11 @@ type PlayerMove = {
 
 type GameState =
     | Start of Start
-    | Player1Oversee of Oversee * GameOverview
+    | Player1Oversee of PlayerOversee * GameOverview
     | Player1Move of PlayerMove * GameOverview
     | Player1Action
     | Player2Oversee of PlayerMove * GameOverview
-    | Player2Move of Oversee * GameOverview
+    | Player2Move of PlayerOversee * GameOverview
     | Player2Action
     | Player1Wins
     | Player2Wins
