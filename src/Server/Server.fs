@@ -55,7 +55,7 @@ module Storage =
 
     let enqueueResult (result: GameResult) (game: Game) =
         // TODO make this more clear
-        let go = GameState.overview game.state
+        let go = GameState.details game.state
         let resultDto = GameResult.intoDto result go
         let recipient = GameResult.recipient result
 

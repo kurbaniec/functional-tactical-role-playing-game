@@ -98,7 +98,10 @@ type Board = Map<Row, Map<Col, Tile>>
 
 type Characters = Map<CharacterId, Character>
 
-type GameOverview = {
+type Player = Player1|Player2
+
+type GameDetails = {
+    turnOf: Player
     player1Characters: Characters
     player2Characters: Characters
     board: Board
@@ -114,35 +117,35 @@ type Start = {
 //     col: int
 // }
 
-type Player = Player1|Player2
-
 type PlayerOversee = {
-    player: Player
+    details: GameDetails
+    awaitingTurns: Characters
 }
 
 type PlayerMove = {
-    player: Player
+    details: GameDetails
+    awaitingTurns: Characters
     character: Character
 }
 
 
 
 type GameState =
-    | Player1Oversee of PlayerOversee * GameOverview
-    | Player1Move of PlayerMove * GameOverview
-    | Player1Action
-    | Player2Oversee of PlayerMove * GameOverview
-    | Player2Move of PlayerOversee * GameOverview
-    | Player2Action
+    | PlayerOverseeState of PlayerOversee
+    | PlayerMoveState of PlayerMove
+    | PlayerActionState
     | Player1Wins
     | Player2Wins
 
 module GameState =
-    let overview (gs: GameState): GameOverview =
+    let details (gs: GameState): GameDetails =
         match gs with
-        | Player1Oversee(playerOversee, gameOverview) -> gameOverview
-        | Player1Move(playerMove, gameOverview) -> gameOverview
+        | PlayerOverseeState s -> s.details
+        | PlayerMoveState s -> s.details
         | _ -> failwith "gamestate overview"
+
+    let turnOf (gs: GameState): Player =
+        gs |> details |> fun d -> d.turnOf
 
 type GameId = System.Guid
 type Game = {
@@ -160,7 +163,7 @@ type PlayerMoveResult =
     | AllCharactersMoved
 
 type PlayerAction = {
-    state: GameOverview
+    state: GameDetails
     // cursor: Cursor
     // context menu ?
 }
@@ -175,6 +178,11 @@ type GameResult =
     // | ShowCharacterActionPath
     // | HideCharacterActionPath
     // | ShowActionInfo
+
+type GameMessage =
+    | SelectCharacter of Player * CharacterId
+
+
 
 module GameResult =
     type Recipient =

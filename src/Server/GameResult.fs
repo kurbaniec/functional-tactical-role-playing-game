@@ -63,7 +63,7 @@ let intoPlayerDto (player: Player) : PlayerDto =
     | Player1 -> PlayerDto.Player1
     | Player2 -> PlayerDto.Player2
 
-let intoStartDto (gid: GameId) (game: GameOverview) =
+let intoStartDto (gid: GameId) (game: GameDetails) =
     let boardDto = intoBoardDto game.board
 
     let characters =
@@ -77,12 +77,12 @@ let intoStartDto (gid: GameId) (game: GameOverview) =
           characters = characters }
 
 
-let intoPlayerOverseeDto (player: Player) (game: GameOverview) =
+let intoPlayerOverseeDto (player: Player) (game: GameDetails) =
     PlayerOverseeResult { player = intoPlayerDto player }
 
 
 
-let intoDto (gameResult: GameResult) (game: GameOverview) =
+let intoDto (gameResult: GameResult) (game: GameDetails) =
     let res: IResult =
         match gameResult with
         | Start guid -> intoStartDto guid game

@@ -64,13 +64,7 @@ module DomainDto =
           pos: PositionDto }
 
     type IMessage =
-        interface
-        end
-
-
-
-    type StartMessage() =
-        interface IMessage
+        | SelectCharacterDto of string
 
 
 
