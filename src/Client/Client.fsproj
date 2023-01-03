@@ -22,6 +22,7 @@
       <Content Include="output\Shared\Shared.js" />
       <Content Include="output\App.js" />
       <Content Include="output\App.js.map" />
+      <Content Include="Utils.js" />
     </ItemGroup>
     <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

@@ -5,7 +5,9 @@ open System.Collections.Generic
 
 let create (row: Row) (col: Col) : Board =
     let columns =
-        [ for i in 0 .. (Col.value col) - 1 -> (Col i, Tile.Land None) ] |> Map.ofList
+        [ for i in 0 .. (Col.value col) -> (Col i, Tile.Land None) ]
+        |> List.mapi (fun i x -> if i = 1 || i = 5 then (Col i, Tile.Water None) else x)
+        |> Map.ofList
 
     let board = [ for i in 0 .. (Row.value row) - 1 -> (Row i, columns) ] |> Map.ofList
     board
