@@ -1,7 +1,7 @@
 ﻿// See: https://github.com/fable-compiler/fable3-samples/blob/main/interopFableFromJS/src/index.js
 import { init, update, GameInfo } from "./output/Index.js"
-import { DomainDto_IResult } from "./output/Shared/Shared";
-import {coerceIn, simpleRecordName, unwrap} from "./Utils";
+import {DomainDto_CharacterDto, DomainDto_IResult} from "./output/Shared/Shared";
+import {boardPosToVec3, coerceIn, positionDtoToVec3, simpleRecordName, unwrap} from "./Utils";
 import {
     ArcRotateCamera, Color3,
     Engine,
@@ -42,6 +42,30 @@ class Cursor {
 
     get position() {
         return this.mesh.position
+
+    }
+}
+
+class Character {
+
+    /**
+     * @param {DomainDto_CharacterDto} model
+     * @param {Scene} scene
+     */
+    constructor(model, scene) {
+        this.model = model
+        const mesh = MeshBuilder.CreateBox(this.model.id, {depth: 0.5, width: 0.5, height: 0.8}, scene);
+        mesh.position.y = 1.2/2
+        mesh.position.addInPlace(positionDtoToVec3(this.model.position))
+        const cursorMaterial = new StandardMaterial(`mat${this.model.id}`, scene);
+        // if (this.model.)
+        // TODO get player info
+        cursorMaterial.diffuseColor = Color3.Blue();
+        // cursorMaterial.emissiveColor = new Color3(0.1, 0.1, 0.1);
+        cursorMaterial.alpha = 0.7;
+        mesh.material = cursorMaterial;
+        this.mesh = mesh
+        console.log("char", this.mesh.position)
     }
 }
 
@@ -79,7 +103,7 @@ class GameUI {
         const inputManager = new InputManager()
         inputManager.register(this.onInput.bind(this), this.engineInfo.scene)
         this.cursor = new Cursor(
-            new Vector3(0, 0.1, 0.5),
+            boardPosToVec3(0, 0),
             this.engineInfo.scene
         )
         this.isPolling = true
@@ -114,10 +138,13 @@ class GameUI {
 
         const tiledGround = MeshBuilder
             .CreateTiledGround("board", {
-                xmin: -board.row/2, zmin: -board.col/2,
-                xmax: board.row/2, zmax: board.col/2,
+                xmin: -0.5, zmin: 0.5 - board.col,
+                xmax: -0.5 + board.row, zmax: 0.5,
                 subdivisions: {'h': board.col, 'w': board.row }
             })
+
+        // Place camera at board center
+        camera.target = new Vector3(-0.5 + board.row/2, 0, 0.5 -board.col/2)
 
         //Create the multi material
         //Create differents materials
@@ -164,6 +191,10 @@ class GameUI {
         const engineInfo = {
             engine: engine,
             scene: scene
+        }
+
+        for (const c of startInfo.characters) {
+            new Character(c, scene)
         }
 
         return new GameUI(gameInfo, engineInfo)
