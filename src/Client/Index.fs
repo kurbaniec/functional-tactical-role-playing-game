@@ -56,9 +56,10 @@ let update2 (msg: Msg) (model: Model) : Model * Cmd<Msg> =
     match msg with
     | Start startResult ->
         printfn $"%A{startResult}"
+
         match startResult :> obj with
-            | :? StartResult -> printfn ("| start result")
-            | _ -> printfn "| kek"
+        | :? StartResult -> printfn ("| start result")
+        | _ -> printfn "| kek"
 
         model, Cmd.none
 
@@ -168,25 +169,29 @@ let GameUI: GameUIStatic = jsNative
 
 // See: https://github.com/fable-compiler/Fable/issues/2115
 
-type GameInfo = {
-    id: string
-    player: PlayerDto
-}
+type GameInfo = { id: string; player: PlayerDto }
 
 
 
 let init () : Promise<GameInfo> =
     async {
-        let! id, player = todosApi.start()
+        let! id, player = todosApi.start ()
         return { id = id; player = player }
-    } |> Async.StartAsPromise
+    }
+    |> Async.StartAsPromise
 
 let update (gameInfo: GameInfo) : Promise<Option<IResult>> =
-    async {
-        return! todosApi.poll gameInfo.id gameInfo.player
-    } |> Async.StartAsPromise
+    async { return! todosApi.poll gameInfo.id gameInfo.player }
+    |> Async.StartAsPromise
 
-let game = GameUI.create()
+let sendMessage (msg: IMessage) (gameInfo: GameInfo) : Promise<unit> =
+    async { return! todosApi.update gameInfo.id gameInfo.player msg }
+    |> Async.StartAsPromise
+
+let game = GameUI.create ()
+
+let testo = SelectCharacterDto ""
+JS.console.log(testo)
 
 // async {
 //
@@ -251,5 +256,3 @@ let test3 (kek: IResult) =
 
 test2 test
 test3 test*)
-
-

@@ -97,4 +97,5 @@ open DomainDto
 
 type IGameApi =
     { start: unit -> Async<string * PlayerDto>
-      poll: string -> PlayerDto -> Async<Option<IResult>> }
+      poll: string -> PlayerDto -> Async<Option<IResult>>
+      update: string -> PlayerDto -> IMessage-> Async<unit> }

@@ -1,6 +1,6 @@
 ﻿// See: https://github.com/fable-compiler/fable3-samples/blob/main/interopFableFromJS/src/index.js
-import { init, update, GameInfo } from "./output/Index.js"
-import {DomainDto_CharacterDto, DomainDto_IResult} from "./output/Shared/Shared";
+import {init, update, GameInfo, sendMessage} from "./output/Index.js"
+import {DomainDto_CharacterDto, DomainDto_IMessage, DomainDto_IResult} from "./output/Shared/Shared";
 import {boardPosToVec3, coerceIn, positionDtoToVec3, simpleRecordName, unwrap} from "./Utils";
 import {
     ArcRotateCamera, Color3,
@@ -74,6 +74,13 @@ class GameUI {
     /** @param {string} input **/
     onInput(input) {
         this.cursor.moveCursor(input)
+
+        // Only for debugging
+        const msg = new DomainDto_IMessage(
+            0, [GameUI.cid]
+        )
+        console.log("msg", msg)
+        sendMessage(msg, this.gameInfo)
     }
 
     /** @param {Record} result **/
@@ -109,6 +116,8 @@ class GameUI {
         this.isPolling = true
         const _ = this.poll()
     }
+
+    static cid = ""
 
     static async create() {
         /** @type {GameInfo} */
@@ -194,6 +203,7 @@ class GameUI {
         }
 
         for (const c of startInfo.characters) {
+            this.cid = c.id
             new Character(c, scene)
         }
 

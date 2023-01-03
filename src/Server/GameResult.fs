@@ -87,5 +87,7 @@ let intoDto (gameResult: GameResult) (game: GameDetails) =
         match gameResult with
         | Start guid -> intoStartDto guid game
         | PlayerOversee player -> intoPlayerOverseeDto player game
+        | PlayerMoveSelection (player, guid) -> intoPlayerOverseeDto player game
+        | _ -> failwith "intoDto"
 
     res

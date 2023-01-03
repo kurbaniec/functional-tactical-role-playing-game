@@ -46,7 +46,7 @@ module Storage =
     let private player1Results = Dictionary<GameId, Queue<IResult>>()
     let private player2Results = Dictionary<GameId, Queue<IResult>>()
 
-    let updateGame (game: Game) : unit = games.Add(game.id, game)
+    let updateGame (game: Game) : unit = games[ game.id ] <- game
 
     let createGame (game: Game) : unit =
         updateGame game
@@ -77,6 +77,14 @@ module Storage =
 
         if queue.Count = 0 then None else queue.Dequeue() |> Some
 
+    let processMessage (player: PlayerDto) (gameId: GameId) (msg: IMessage) =
+        let player = player |> GameMessage.fromPlayerDto
+        let msg = msg |> GameMessage.fromDto player
+        let game = games[gameId]
+        let results, game = Game.update player msg game
+        updateGame game
+        List.iter (fun r -> enqueueResult r game) results
+
 let gameApi =
     { start =
         fun () ->
@@ -92,6 +100,13 @@ let gameApi =
               async {
                   let id = System.Guid.Parse(id)
                   return Storage.dequeResult player id
+              }
+
+      update =
+          fun (id: string) (player: PlayerDto) (msg: IMessage) ->
+              async {
+                  let id = System.Guid.Parse(id)
+                  return Storage.processMessage player id msg
               } }
 
 let webApp =

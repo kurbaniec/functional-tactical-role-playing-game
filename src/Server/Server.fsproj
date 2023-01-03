@@ -11,6 +11,7 @@
     <Compile Include="GameState.fs" />
     <Compile Include="Game.fs" />
     <Compile Include="GameResult.fs" />
+    <Compile Include="GameMessage.fs" />
     <Compile Include="Server.fs" />
   </ItemGroup>
   <ItemGroup>

@@ -107,6 +107,13 @@ type GameDetails = {
     board: Board
 }
 
+module GameDetails =
+    let board (d: GameDetails) = d.board
+    let characters (p: Player) (d: GameDetails) =
+        match p with
+        | Player1 -> d.player1Characters
+        | Player2 -> d.player2Characters
+
 type Start = {
     rows: int
     cols: int
@@ -173,6 +180,7 @@ type PlayerAction = {
 type GameResult =
     | Start of GameId
     | PlayerOversee of Player
+    | PlayerMoveSelection of Player * CharacterId
     // | CursorUpdate
     // | ContextUpdate
     // | ShowCharacterActionPath
@@ -192,5 +200,6 @@ module GameResult =
         match gr with
         | Start _ -> AllRecipients
         | PlayerOversee _ -> AllRecipients
+        | PlayerMoveSelection(p, _) -> PlayerRecipient p
 
 
