@@ -1,7 +1,7 @@
 ﻿// See: https://github.com/fable-compiler/fable3-samples/blob/main/interopFableFromJS/src/index.js
 import { init, update, GameInfo } from "./output/Index.js"
 import { DomainDto_IResult } from "./output/Shared/Shared";
-import {unwrap} from "./Utils";
+import {coerceIn, unwrap} from "./Utils";
 import {
     ArcRotateCamera, Color3,
     Engine,
@@ -11,10 +11,61 @@ import {
     StandardMaterial, SubMesh,
     Vector3
 } from "@babylonjs/core";
+import {Input, InputManager} from "./InputManager"
+
+
+class Cursor {
+
+
+    constructor(start, scene) {
+        const mesh = MeshBuilder.CreateBox("cursor", {depth: 1, width: 1, height: 0.2}, scene);
+        mesh.position = start
+        const cursorMaterial = new StandardMaterial("cursormat", scene);
+        cursorMaterial.diffuseColor = Color3.Red();
+        // cursorMaterial.emissiveColor = new Color3(0.1, 0.1, 0.1);
+        cursorMaterial.alpha = 0.7;
+        mesh.material = cursorMaterial;
+        this.mesh = mesh
+    }
+
+    /** @param {string} input **/
+    moveCursor(input) {
+        if (input === Input.Up)
+            this.mesh.position.addInPlace(new Vector3(0, 0, 1))
+        else if (input === Input.Down)
+            this.mesh.position.addInPlace(new Vector3(0, 0, -1))
+        else if (input === Input.Left)
+            this.mesh.position.addInPlace(new Vector3(-1, 0, 0))
+        else if (input === Input.Right)
+            this.mesh.position.addInPlace(new Vector3(1, 0, 0))
+    }
+
+    get position() {
+        return this.mesh.position
+    }
+}
 
 class GameUI {
-    constructor(gameInfo) {
+
+    /** @param {string} input **/
+    onInput(input) {
+        this.cursor.moveCursor(input)
+    }
+
+    onResult() {
+
+    }
+
+
+    constructor(gameInfo, engineInfo) {
         this.gameInfo = gameInfo
+        this.engineInfo = engineInfo
+        const inputManager = new InputManager()
+        inputManager.register(this.onInput.bind(this), this.engineInfo.scene)
+        this.cursor = new Cursor(
+            new Vector3(0, 0.1, 0.5),
+            this.engineInfo.scene
+        )
     }
 
     static async create() {
@@ -83,45 +134,6 @@ class GameUI {
             }
         }
 
-        console.log(tiledGround.position)
-        const cursor = MeshBuilder.CreateBox("cursor", { depth: 1, width: 1, height: 0.2 }, scene);
-        cursor.position = new Vector3(0.5, 0.1, 0.5);
-        const cursorMaterial = new StandardMaterial("cursormat", scene);
-        cursorMaterial.diffuseColor = Color3.Red();
-        // cursorMaterial.emissiveColor = new Color3(0.1, 0.1, 0.1);
-        cursorMaterial.alpha = 0.7;
-        cursor.material = cursorMaterial;
-
-        function moveCursor(x, z) {
-            cursor.position.addInPlace(new Vector3(x, 0, z));
-        }
-
-        scene.onKeyboardObservable.add((kbInfo) => {
-            if (kbInfo.type === KeyboardEventTypes.KEYDOWN) return;
-            // console.log(kbInfo.event);
-            switch (kbInfo.event.keyCode) {
-                case 87: // W
-                    console.log("Pressed W");
-                    moveCursor(0, 1);
-                    break;
-                case 83: // S
-                    console.log("Pressed S");
-                    moveCursor(0, -1);
-                    break;
-                case 65: // A
-                    console.log("Pressed A");
-                    moveCursor(-1, 0);
-                    break;
-                case 68: // D
-                    console.log("Pressed D");
-                    moveCursor(1, 0);
-                    break;
-                case 32: // Space
-                    console.log("Pressed Space");
-                    break;
-            }
-        });
-
         engine.runRenderLoop(() => {
             scene.render()
         })
@@ -139,7 +151,13 @@ class GameUI {
         }
         const _ = polling();
 
-        return new GameUI(gameInfo)
+        /** @type {{engine: Engine, scene: Scene}} **/
+        const engineInfo = {
+            engine: engine,
+            scene: scene
+        }
+
+        return new GameUI(gameInfo, engineInfo)
     }
 
     start(startResult) {
