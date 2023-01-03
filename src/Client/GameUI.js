@@ -1,7 +1,7 @@
 ﻿// See: https://github.com/fable-compiler/fable3-samples/blob/main/interopFableFromJS/src/index.js
 import { init, update, GameInfo } from "./output/Index.js"
 import { DomainDto_IResult } from "./output/Shared/Shared";
-import {coerceIn, unwrap} from "./Utils";
+import {coerceIn, simpleRecordName, unwrap} from "./Utils";
 import {
     ArcRotateCamera, Color3,
     Engine,
@@ -52,8 +52,24 @@ class GameUI {
         this.cursor.moveCursor(input)
     }
 
-    onResult() {
+    /** @param {Record} result **/
+    onResult(result) {
+        console.log("result", result)
+        const name = simpleRecordName(result)
+        if (name === "PlayerOverseeResult") {
 
+        } else {
+            console.error(`Unknown Result: ${name}`, result)
+        }
+    }
+
+    async poll() {
+        while (this.isPolling) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            /** @type {DomainDto_IResult} */
+            const result = await update(this.gameInfo)
+            if (result) this.onResult(unwrap(result))
+        }
     }
 
 
@@ -66,6 +82,8 @@ class GameUI {
             new Vector3(0, 0.1, 0.5),
             this.engineInfo.scene
         )
+        this.isPolling = true
+        const _ = this.poll()
     }
 
     static async create() {
@@ -141,15 +159,6 @@ class GameUI {
         window.addEventListener("resize", function () {
             engine.resize()
         })
-
-        const polling = async () => {
-            let condition = false;
-            while (!condition) {
-                await new Promise(resolve => setTimeout(resolve, 100));
-                // console.log("polling");
-            }
-        }
-        const _ = polling();
 
         /** @type {{engine: Engine, scene: Scene}} **/
         const engineInfo = {
