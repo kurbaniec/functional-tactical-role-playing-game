@@ -1,5 +1,6 @@
 ﻿import { Union, Record } from "./output/fable_modules/fable-library.3.7.5/Types.js";
 import {Vector3} from "@babylonjs/core";
+import {DomainDto_PositionDto} from "./output/Shared/Shared";
 
 
 /** @param {Union} union **/
@@ -38,4 +39,23 @@ export function boardPosToVec3(row, col) {
 /** @param {DomainDto_PositionDto} pos **/
 export function positionDtoToVec3(pos) {
     return boardPosToVec3(pos.row, pos.col)
+}
+
+/** @param {Vector3} vec3 **/
+export function vec3ToPositionDto(vec3) {
+    return new DomainDto_PositionDto(vec3.x, -vec3.z)
+}
+
+// See: https://stackoverflow.com/a/2549333
+export function eachRecursive(thisModel, model) {
+    for (let key in model) {
+        if (typeof model[key] == "object" && model[key] !== null) {
+            if (thisModel[key] === null)
+                thisModel[key] = {}
+            eachRecursive(thisModel[key], model[key])
+        }
+        else {
+            thisModel[key] = model
+        }
+    }
 }

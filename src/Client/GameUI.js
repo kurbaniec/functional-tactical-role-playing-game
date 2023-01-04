@@ -1,7 +1,16 @@
 ﻿// See: https://github.com/fable-compiler/fable3-samples/blob/main/interopFableFromJS/src/index.js
-import {init, pollServer, GameInfo, updateServer} from "./output/Index.js"
+import {init, pollServer, GameInfo, updateServer, game} from "./output/Index.js"
 import {DomainDto_CharacterDto, DomainDto_IMessage, DomainDto_IResult} from "./output/Shared/Shared";
-import {boardPosToVec3, coerceIn, positionDtoToVec3, simpleRecordName, unwrap} from "./Utils";
+import {
+    boardPosToVec3,
+    coerceIn,
+    eachRecursive,
+    Player,
+    positionDtoToVec3,
+    simpleRecordName,
+    unwrap,
+    vec3ToPositionDto
+} from "./Utils";
 import {
     ArcRotateCamera, Color3,
     Engine,
@@ -42,7 +51,10 @@ class Cursor {
 
     get position() {
         return this.mesh.position
+    }
 
+    get positionDto() {
+        return vec3ToPositionDto(this.mesh.position)
     }
 }
 
@@ -55,17 +67,36 @@ class Character {
     constructor(model, scene) {
         this.model = model
         const mesh = MeshBuilder.CreateBox(this.model.id, {depth: 0.5, width: 0.5, height: 0.8}, scene);
-        mesh.position.y = 1.2/2
+        mesh.position.y = 1.2 / 2
         mesh.position.addInPlace(positionDtoToVec3(this.model.position))
         const cursorMaterial = new StandardMaterial(`mat${this.model.id}`, scene);
-        // if (this.model.)
-        // TODO get player info
-        cursorMaterial.diffuseColor = Color3.Blue();
+        if (this.model.player === Player.Player1)
+            cursorMaterial.diffuseColor = Color3.Blue();
+        else
+            cursorMaterial.diffuseColor = Color3.Green();
         // cursorMaterial.emissiveColor = new Color3(0.1, 0.1, 0.1);
         cursorMaterial.alpha = 0.7;
         mesh.material = cursorMaterial;
         this.mesh = mesh
-        console.log("char", this.mesh.position)
+    }
+
+    /** @param {DomainDto_CharacterDto} model **/
+    updateModel(model) {
+        console.log("before update model", this.model)
+        eachRecursive(this.model, model)
+        console.log("after update model", this.model)
+    }
+
+    get id() {
+        return this.model.id
+    }
+
+    get position() {
+        return this.mesh.position
+    }
+
+    get positionDto() {
+        return vec3ToPositionDto(this.mesh.position)
     }
 }
 
@@ -73,14 +104,8 @@ class GameUI {
 
     /** @param {string} input **/
     onInput(input) {
-        this.cursor.moveCursor(input)
-
-        // Only for debugging
-        const msg = new DomainDto_IMessage(
-            0, [GameUI.cid]
-        )
-        console.log("msg", msg)
-        updateServer(msg, this.gameInfo)
+        if (!this.myTurn()) return
+        this.gameState.update(input)
     }
 
     /** @param {Record} result **/
@@ -88,9 +113,27 @@ class GameUI {
         console.log("result", result)
         const name = simpleRecordName(result)
         if (name === "PlayerOverseeResult") {
-
+            this.onPlayerOverseeResult(result)
         } else {
             console.error(`Unknown Result: ${name}`, result)
+        }
+    }
+
+    /** @param {DomainDto_PlayerOverseeResult} result **/
+    onPlayerOverseeResult(result) {
+        this.gameState.turnOf = result.player
+        if (!this.myTurn()) return;
+        this.gameState.update = (input) => {
+            if (input === Input.Enter) {
+                const c = this.findCharacter(this.cursor.positionDto)
+                if (!c) return;
+                updateServer(new DomainDto_IMessage(
+                0, [c.id]
+                ), this.gameInfo)
+
+            } else {
+                this.cursor.moveCursor(input)
+            }
         }
     }
 
@@ -103,9 +146,30 @@ class GameUI {
         }
     }
 
+    myTurn() { return this.gameInfo.player === this.gameState.turnOf }
 
-    constructor(gameInfo, engineInfo) {
+    /**
+     * @param {DomainDto_PositionDto} pos
+     * @return {Character}
+     */
+    findCharacter(pos) {
+        return [...this.characters.values()].find(
+            c => c.positionDto.row === pos.row && c.positionDto.col === pos.col
+        )
+    }
+
+    /**
+     * @param {GameInfo} gameInfo
+     * @param gameState
+     * @param {Map<string, Character>}characters
+     * @param {Array<Array<null|Character>>} board
+     * @param {{engine: Engine, scene: Scene}} engineInfo
+     */
+    constructor(gameInfo, gameState, characters, board, engineInfo) {
         this.gameInfo = gameInfo
+        this.gameState = gameState
+        this.characters = characters
+        this.board = board
         this.engineInfo = engineInfo
         const inputManager = new InputManager()
         inputManager.register(this.onInput.bind(this), this.engineInfo.scene)
@@ -139,7 +203,7 @@ class GameUI {
 
         console.log(startInfo.board)
         /** @type {{row: number, col: number}} **/
-        const board = {
+        const boardInfo = {
             row: startInfo.board.length,
             col: startInfo.board[0].length,
             tiles: startInfo.board
@@ -147,13 +211,13 @@ class GameUI {
 
         const tiledGround = MeshBuilder
             .CreateTiledGround("board", {
-                xmin: -0.5, zmin: 0.5 - board.col,
-                xmax: -0.5 + board.row, zmax: 0.5,
-                subdivisions: {'h': board.col, 'w': board.row }
+                xmin: -0.5, zmin: 0.5 - boardInfo.col,
+                xmax: -0.5 + boardInfo.row, zmax: 0.5,
+                subdivisions: {'h': boardInfo.col, 'w': boardInfo.row}
             })
 
         // Place camera at board center
-        camera.target = new Vector3(-0.5 + board.row/2, 0, 0.5 -board.col/2)
+        camera.target = new Vector3(-0.5 + boardInfo.row / 2, 0, 0.5 - boardInfo.col / 2)
 
         //Create the multi material
         //Create differents materials
@@ -174,16 +238,16 @@ class GameUI {
 
         // Needed variables to set subMeshes
         const verticesCount = tiledGround.getTotalVertices();
-        const tileIndicesLength = tiledGround.getIndices().length / (board.row * board.col);
+        const tileIndicesLength = tiledGround.getIndices().length / (boardInfo.row * boardInfo.col);
 
         // Set subMeshes of the tiled ground
         tiledGround.subMeshes = [];
         let base = 0;
 
         // meshes are built from bottom to top, right to left
-        for (let col = board.col-1; col >= 0; col--) {
-            for (let row = board.row-1; row >= 0; row--) {
-                tiledGround.subMeshes.push(new SubMesh(board.tiles[row][col], 0, verticesCount, base , tileIndicesLength, tiledGround));
+        for (let col = boardInfo.col - 1; col >= 0; col--) {
+            for (let row = boardInfo.row - 1; row >= 0; row--) {
+                tiledGround.subMeshes.push(new SubMesh(boardInfo.tiles[row][col], 0, verticesCount, base, tileIndicesLength, tiledGround));
                 base += tileIndicesLength;
             }
         }
@@ -196,19 +260,39 @@ class GameUI {
             engine.resize()
         })
 
+        let differentPlayer;
+        if (gameInfo.player === Player.Player1) differentPlayer = Player.Player2
+        else differentPlayer = Player.Player1
+
+
+
+        const gameState = {
+            turnOf: differentPlayer,
+            /** @param {string} input */
+            update: (input) => {}
+        }
+
+        // TODO: remove board
+        const board =
+            Array.from({length: boardInfo.row}, () => Array.from(
+                {length: boardInfo.col}, () => null
+            ))
+
+        const characters = new Map()
+        for (const c of startInfo.characters) {
+            const newCharacter = new Character(c, scene)
+            characters.set(c.id, newCharacter)
+            let pos = newCharacter.positionDto
+            board[pos.row][pos.col] = newCharacter
+        }
+
         /** @type {{engine: Engine, scene: Scene}} **/
         const engineInfo = {
             engine: engine,
             scene: scene
         }
 
-        for (const c of startInfo.characters) {
-            console.log("character", c)
-            this.cid = c.id
-            new Character(c, scene)
-        }
-
-        return new GameUI(gameInfo, engineInfo)
+        return new GameUI(gameInfo, gameState, characters, board, engineInfo)
     }
 
     start(startResult) {
@@ -228,4 +312,4 @@ class GameUI {
 
 }
 
-export { GameUI };
+export {GameUI};
