@@ -118,17 +118,16 @@ let rec doPathfinding
     match frontier with
     | [] -> foundTiles
     | current :: frontier ->
-        let neighbors = findNeighbors current b |> List.filter (fun n -> predicate (snd n))
-        let currentDistance =
-            Map.find current foundTiles
-            |> fun ft -> ft.distance + 1
+        let currentDistance = Map.find current foundTiles |> fun ft -> ft.distance + 1
 
-        let (frontier, foundTiles, newDistance) =
-            inspectNeighbors currentDistance frontier foundTiles neighbors
-
-        if newDistance > maxDistance then
-            foundTiles
+        if currentDistance > maxDistance then
+            doPathfinding frontier foundTiles maxDistance predicate b
         else
+            let neighbors = findNeighbors current b |> List.filter (fun n -> predicate (snd n))
+
+            let (frontier, foundTiles, newDistance) =
+                inspectNeighbors currentDistance frontier foundTiles neighbors
+
             doPathfinding frontier foundTiles maxDistance predicate b
 
 let pathfinding
