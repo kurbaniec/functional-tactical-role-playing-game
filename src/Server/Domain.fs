@@ -159,7 +159,9 @@ type PlayerOversee =
 type PlayerMove =
     { details: GameDetails
       awaitingTurns: Characters
-      character: Character }
+      character: Character
+      availableMoves: list<CellPosition>
+       }
 
 
 
@@ -198,7 +200,8 @@ type PlayerAction =
      }
 
 
-
+// TODO: Make tuples?
+// See: https://github.com/fsharp/fslang-suggestions/issues/743
 type GameResult =
     | Start of GameId
     | PlayerOversee of Player

@@ -23,7 +23,8 @@ module PlayerOverseeState =
                 PlayerMoveState
                     { details = state.details
                       awaitingTurns = state.awaitingTurns
-                      character = c }
+                      character = c
+                      availableMoves = availableMoves }
 
             ([ result ], state)
 

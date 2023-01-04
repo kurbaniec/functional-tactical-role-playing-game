@@ -86,6 +86,15 @@ let intoStartDto (gid: GameId) (game: GameDetails) =
 let intoPlayerOverseeDto (player: Player) (game: GameDetails) =
     PlayerOverseeResult { player = intoPlayerDto player }
 
+let intoPlayerMoveSelectionDto
+    (player: Player)
+    (cid: CharacterId)
+    (availableMoves: list<CellPosition>)
+    (game: GameDetails)
+    =
+    PlayerMoveSelectionResult
+        { character = cid.ToString()
+          availableMoves = availableMoves |> List.map intoPositionDto |> ResizeArray }
 
 
 let intoDto (gameResult: GameResult) (game: GameDetails) =
@@ -93,7 +102,7 @@ let intoDto (gameResult: GameResult) (game: GameDetails) =
         match gameResult with
         | Start guid -> intoStartDto guid game
         | PlayerOversee player -> intoPlayerOverseeDto player game
-        | PlayerMoveSelection (player, guid, _) -> intoPlayerOverseeDto player game
+        | PlayerMoveSelection (p, c, m) -> intoPlayerMoveSelectionDto p c m game
         | _ -> failwith "intoDto"
 
     res

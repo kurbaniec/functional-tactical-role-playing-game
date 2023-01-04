@@ -56,8 +56,7 @@ module DomainDto =
           classification: CharacterClassDto
           position: Option<PositionDto>
           player: Option<PlayerDto>
-          properties: System.Collections.Generic.Dictionary<string, Object>
-        }
+          properties: System.Collections.Generic.Dictionary<string, Object> }
 
 
     type PlaceCharacterDto =
@@ -65,8 +64,7 @@ module DomainDto =
           character: CharacterDto
           pos: PositionDto }
 
-    type IMessage =
-        | SelectCharacterDto of string
+    type IMessage = SelectCharacterDto of string
 
 
 
@@ -75,12 +73,16 @@ module DomainDto =
           board: BoardDto
           characters: ResizeArray<CharacterDto> }
 
-    type PlayerOverseeResult =
-        { player: PlayerDto }
+    type PlayerOverseeResult = { player: PlayerDto }
+
+    type PlayerMoveSelectionResult =
+        { character: string
+          availableMoves: ResizeArray<PositionDto> }
 
     type IResult =
         | StartResult of StartResult
         | PlayerOverseeResult of PlayerOverseeResult
+        | PlayerMoveSelectionResult of PlayerMoveSelectionResult
 
 
 
@@ -100,4 +102,4 @@ open DomainDto
 type IGameApi =
     { start: unit -> Async<string * PlayerDto>
       poll: string -> PlayerDto -> Async<Option<IResult>>
-      update: string -> PlayerDto -> IMessage-> Async<unit> }
+      update: string -> PlayerDto -> IMessage -> Async<unit> }
