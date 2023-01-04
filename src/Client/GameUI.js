@@ -118,6 +118,7 @@ class GameUI {
     onPlayerOverseeResult(result) {
         this.gameState.turnOf = result.player
         if (!this.myTurn()) return;
+        this.removeHighlight();
         this.gameState.update = (input) => {
             if (input === Input.Enter) {
                 const c = this.findCharacter(this.cursor.positionDto)
@@ -144,6 +145,8 @@ class GameUI {
                     0, [c.id]
                 ), this.gameInfo)
 
+            } if (input === Input.Escape) {
+                updateServer(new DomainDto_IMessage(1), this.gameInfo)
             } else {
                 this.cursor.moveCursor(input)
                 this.showCharacterInfo(this.cursor.positionDto)
@@ -210,6 +213,7 @@ class GameUI {
     }
 
     removeHighlight() {
+        if (!this.highlightMeshes) return
         for (const mesh of this.highlightMeshes) {
             mesh.dispose()
         }

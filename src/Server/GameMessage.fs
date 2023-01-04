@@ -11,8 +11,12 @@ let fromSelectCharacterDto (p: Player) (c: string): GameMessage =
     let c = System.Guid.Parse(c)
     SelectCharacter (p, c)
 
+let fromDeselectCharacterDto (p: Player): GameMessage =
+    DeselectCharacter p
+
 let fromDto (p: Player) (msg: IMessage): GameMessage =
     match msg with
     | SelectCharacterDto c -> fromSelectCharacterDto p c
+    | DeselectCharacterDto -> fromDeselectCharacterDto p
     | _ -> failwith "fromDto"
 

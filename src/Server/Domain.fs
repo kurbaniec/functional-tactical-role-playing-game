@@ -163,6 +163,11 @@ type PlayerMove =
       availableMoves: list<CellPosition>
        }
 
+type PlayerAction =
+    { details: GameDetails
+      awaitingTurns: Characters
+      character: Character
+    }
 
 
 type GameState =
@@ -184,22 +189,6 @@ module GameState =
 type GameId = System.Guid
 type Game = { id: GameId; state: GameState }
 
-type PlayerMoveResult =
-    | CursorUpdate
-    | ShowCharacterMovePath
-    | MoveCharacter
-    | HideCharacterMovePath
-    | InvalidCharacterMovePath
-    | ShowCharacterInfo
-    | AllCharactersMoved
-
-type PlayerAction =
-    { state: GameDetails
-    // cursor: Cursor
-    // context menu ?
-     }
-
-
 // TODO: Make tuples?
 // See: https://github.com/fsharp/fslang-suggestions/issues/743
 type GameResult =
@@ -212,7 +201,9 @@ type GameResult =
 // | HideCharacterActionPath
 // | ShowActionInfo
 
-type GameMessage = SelectCharacter of Player * CharacterId
+type GameMessage =
+    | SelectCharacter of Player * CharacterId
+    | DeselectCharacter of Player
 
 
 

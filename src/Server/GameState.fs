@@ -34,3 +34,18 @@ module PlayerOverseeState =
         match msg with
         | SelectCharacter (p, c) -> selectCharacter p c state
         | _ -> ([], PlayerOverseeState(state))
+
+module PlayerMoveState =
+    let deselectCharacter (p: Player) (state: PlayerMove) : GameStateUpdate =
+        let msg =  [ PlayerOversee p ]
+        let state =
+                PlayerOverseeState
+                    { details = state.details
+                      awaitingTurns = state.awaitingTurns
+                    }
+        (msg, state)
+
+    let update (msg: GameMessage) (state: PlayerMove) : GameStateUpdate =
+        match msg with
+        | DeselectCharacter (p) -> deselectCharacter p state
+        | _ -> ([], PlayerMoveState(state))

@@ -64,9 +64,9 @@ module DomainDto =
           character: CharacterDto
           pos: PositionDto }
 
-    type IMessage = SelectCharacterDto of string
-
-
+    type IMessage =
+        | SelectCharacterDto of string
+        | DeselectCharacterDto
 
     type StartResult =
         { id: string
