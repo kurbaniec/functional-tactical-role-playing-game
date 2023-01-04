@@ -36,11 +36,6 @@ let findCharacter (c: CharacterId) (board: Board) : CellPosition =
             | Some cid -> if cid = c then Some(row, col) else None
             | None -> None))
 
-let moveCharacter (f: CellPosition) (t: CellPosition) (board: Board) : Board =
-    let (row, col) = f
-    // TODO
-    failwith "not implemented"
-
 let validCharacterMoves (c: CharacterId) (board: Board) : list<CellPosition> =
 
     []
@@ -61,6 +56,28 @@ let findTile (pos: CellPosition) (b: Board) : Tile =
     let (row, col) = pos
     b |> Map.find row |> Map.find col
 
+let private updateTile (tile: Tile) (pos: CellPosition) (b: Board): Board =
+    let (row, col) = pos
+    b
+    |> Map.change row (fun colMap ->
+        match colMap with
+        | None -> None
+        | Some colMap ->
+            colMap
+            |> Map.change col (fun t ->
+                match t with
+                | None -> None
+                | Some _ -> Some tile)
+            |> Some)
+
+
+let moveCharacter (cid: CharacterId) (target: CellPosition) (board: Board) : Board =
+    let from = findCharacter cid board
+    let fromTile = findTile from board |> Tile.leave
+    let targetTile = findTile target board |> Tile.occupy cid
+    board
+    |> updateTile fromTile from
+    |> updateTile targetTile target
 
 let findNeighbors (pos: CellPosition) (b: Board) : list<CellPosition * Tile> =
     // let row, col = pos

@@ -96,6 +96,16 @@ let intoPlayerMoveSelectionDto
         { character = cid.ToString()
           availableMoves = availableMoves |> List.map intoPositionDto |> ResizeArray }
 
+// TODO: Move somewhere else
+let join (p:Map<'a,'b>) (q:Map<'a,'b>) =
+    Map(Seq.concat [ (Map.toSeq p) ; (Map.toSeq q) ])
+
+let intoCharacterUpdateDto (cid: CharacterId) (game: GameDetails) =
+    let character =
+        join game.player1Characters game.player2Characters
+        |> Map.find cid
+        |> fun c -> intoCharacterDto c (Some game.board) None
+    CharacterUpdateResult { character = character }
 
 let intoDto (gameResult: GameResult) (game: GameDetails) =
     let res: IResult =
@@ -103,6 +113,7 @@ let intoDto (gameResult: GameResult) (game: GameDetails) =
         | Start guid -> intoStartDto guid game
         | PlayerOversee player -> intoPlayerOverseeDto player game
         | PlayerMoveSelection (p, c, m) -> intoPlayerMoveSelectionDto p c m game
+        | CharacterUpdate cid -> intoCharacterUpdateDto cid game
         | _ -> failwith "intoDto"
 
     res

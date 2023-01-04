@@ -45,7 +45,21 @@ module PlayerMoveState =
                     }
         (msg, state)
 
+    let moveCharacter (pos: CellPosition) (state: PlayerMove): GameStateUpdate =
+        if not <| List.contains pos state.availableMoves then
+            ([], PlayerMoveState(state))
+        else
+            let newBoard =
+                state.details.board
+                |> Board.moveCharacter state.character.id pos
+            let msg = [ CharacterUpdate (state.character.id) ]
+            let details = { state.details with board = newBoard }
+            let state = PlayerActionState
+            (msg, state)
+
+
     let update (msg: GameMessage) (state: PlayerMove) : GameStateUpdate =
         match msg with
         | DeselectCharacter (p) -> deselectCharacter p state
+        | MoveCharacter (_, pos) -> moveCharacter pos state
         | _ -> ([], PlayerMoveState(state))

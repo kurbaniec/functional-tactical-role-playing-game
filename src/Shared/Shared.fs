@@ -79,10 +79,15 @@ module DomainDto =
         { character: string
           availableMoves: ResizeArray<PositionDto> }
 
+    type CharacterUpdateResult = {
+        character: CharacterDto
+    }
+
     type IResult =
         | StartResult of StartResult
         | PlayerOverseeResult of PlayerOverseeResult
         | PlayerMoveSelectionResult of PlayerMoveSelectionResult
+        | CharacterUpdateResult of CharacterUpdateResult
 
 
 

@@ -89,10 +89,24 @@ type Tile =
     | Water of Occupied
 
 module Tile =
-    let characterId (tile: Tile) : Option<CharacterId> =
+    let characterId (tile: Tile) : Occupied =
         match tile with
         | Land cid -> cid
         | Water cid -> cid
+
+    let isOccupied (tile: Tile): bool =
+        tile |> characterId |> Option.isSome
+
+    let occupy (cid: CharacterId) (tile: Tile): Tile =
+        match tile with
+        | Land _ -> Tile.Land <| Some cid
+        | Water _ -> Tile.Water <| Some cid
+
+    let leave (tile: Tile): Tile =
+        match tile with
+        | Land _ -> Tile.Land None
+        | Water _ -> Tile.Water None
+
 
 type Row = Row of int
 
@@ -189,22 +203,18 @@ module GameState =
 type GameId = System.Guid
 type Game = { id: GameId; state: GameState }
 
+type GameMessage =
+    | SelectCharacter of Player * CharacterId
+    | DeselectCharacter of Player
+    | MoveCharacter of Player * CellPosition
+
 // TODO: Make tuples?
 // See: https://github.com/fsharp/fslang-suggestions/issues/743
 type GameResult =
     | Start of GameId
     | PlayerOversee of Player
     | PlayerMoveSelection of Player * CharacterId * list<CellPosition>
-// | CursorUpdate
-// | ContextUpdate
-// | ShowCharacterActionPath
-// | HideCharacterActionPath
-// | ShowActionInfo
-
-type GameMessage =
-    | SelectCharacter of Player * CharacterId
-    | DeselectCharacter of Player
-
+    | CharacterUpdate of CharacterId
 
 
 module GameResult =
@@ -217,3 +227,4 @@ module GameResult =
         | Start _ -> AllRecipients
         | PlayerOversee _ -> AllRecipients
         | PlayerMoveSelection (p, _, _) -> PlayerRecipient p
+        | CharacterUpdate _ -> AllRecipients
