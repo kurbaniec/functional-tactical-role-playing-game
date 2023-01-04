@@ -76,15 +76,18 @@ let findNeighbors (pos: CellPosition) (b: Board) : list<CellPosition * Tile> =
     |> List.filter (fun pos -> containsPosition pos b)
     |> List.map (fun pos -> (pos, (findTile pos b)))
 
+type Frontier = list<CellPosition>
 type FoundTile = { tile: Tile; distance: int }
+type FoundTiles = Map<CellPosition, FoundTile>
+type Neighbors = list<CellPosition * Tile>
 
 // Adapted from on https://www.redblobgames.com/pathfinding/tower-defense/
 let rec inspectNeighbors
     (currentDistance: int)
-    (frontier: list<CellPosition>)
-    (foundTiles: Map<CellPosition, FoundTile>)
-    (neighbors: list<CellPosition * Tile>)
-    : (list<CellPosition> * Map<CellPosition, FoundTile> * int) =
+    (frontier: Frontier)
+    (foundTiles: FoundTiles)
+    (neighbors: Neighbors)
+    : (Frontier * FoundTiles * int) =
     match neighbors with
     | [] -> (frontier, foundTiles, currentDistance)
     | neighbor :: neighbors ->
@@ -98,8 +101,7 @@ let rec inspectNeighbors
                 |> Map.add
                     nPos
                     { tile = nTile
-                      distance = currentDistance + 1 }
-
+                      distance = currentDistance }
 
             inspectNeighbors currentDistance frontier foundTiles neighbors
         else
@@ -107,22 +109,24 @@ let rec inspectNeighbors
 
 
 let rec doPathfinding
-    (frontier: list<CellPosition>)
-    (foundTiles: Map<CellPosition, FoundTile>)
+    (frontier: Frontier)
+    (foundTiles: FoundTiles)
     (maxDistance: int)
     (predicate: Tile -> bool)
     (b: Board)
-    : Map<CellPosition, FoundTile> =
+    : FoundTiles =
     match frontier with
     | [] -> foundTiles
     | current :: frontier ->
         let neighbors = findNeighbors current b |> List.filter (fun n -> predicate (snd n))
-        let currentDistance = Map.find current foundTiles |> fun ft -> ft.distance
+        let currentDistance =
+            Map.find current foundTiles
+            |> fun ft -> ft.distance + 1
 
         let (frontier, foundTiles, newDistance) =
             inspectNeighbors currentDistance frontier foundTiles neighbors
 
-        if newDistance >= maxDistance then
+        if newDistance > maxDistance then
             foundTiles
         else
             doPathfinding frontier foundTiles maxDistance predicate b
@@ -131,12 +135,28 @@ let pathfinding
     (start: CellPosition)
     (maxDistance: int)
     (predicate: Tile -> bool)
-    (extract: (Map<CellPosition, FoundTile>) -> 'U)
+    (extract: (FoundTiles) -> 'U)
     (b: Board)
     =
     let frontier = [ start ]
     let startTile = findTile start b
     let foundTiles = Map [ (start, { tile = startTile; distance = 0 }) ]
 
-    // TODO extract
-    doPathfinding frontier foundTiles maxDistance predicate
+    doPathfinding frontier foundTiles maxDistance predicate b |> extract
+
+let availablePlayerMoves (d: Distance) (c: CharacterId) (b: Board) : list<CellPosition> =
+    let startPos = findCharacter c b
+    let d = Distance.value d
+    // TODO
+    let predicate (tile: Tile) : bool = true
+    // See: https://devonburriss.me/converting-fsharp-csharp/
+    // let extract (found: FoundTiles): list<CellPosition> =
+    //     found
+    //     |> Map.values
+    //     |> fun v -> v :> seq<_>
+    //     |> Seq.map fst
+    //     |> Seq.toList
+    let extract (found: FoundTiles) : list<CellPosition> =
+        found |> Map.keys :> seq<_> |> Seq.toList
+
+    pathfinding startPos d predicate extract b

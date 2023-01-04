@@ -9,7 +9,15 @@ module PlayerOverseeState =
         match character with
         | None -> ([], PlayerOverseeState(state))
         | Some c ->
-            let result = PlayerMoveSelection(p, c.id)
+            let availableMoves =
+                state.details
+                |> GameDetails.board
+                |> Board.availablePlayerMoves c.movement.distance c.id
+
+            printfn "Available moves"
+            printfn $"%A{availableMoves}"
+
+            let result = PlayerMoveSelection(p, c.id, availableMoves)
 
             let state =
                 PlayerMoveState
