@@ -1,6 +1,11 @@
 ﻿// See: https://github.com/fable-compiler/fable3-samples/blob/main/interopFableFromJS/src/index.js
 import {init, pollServer, GameInfo, updateServer, game} from "./output/Index.js"
-import {DomainDto_CharacterDto, DomainDto_IMessage, DomainDto_IResult} from "./output/Shared/Shared";
+import {
+    DomainDto_CharacterDto,
+    DomainDto_IMessage,
+    DomainDto_IResult,
+    DomainDto_PlayerMoveSelectionResult$reflection
+} from "./output/Shared/Shared";
 import {
     boardPosToVec3,
     coerceIn,
@@ -34,6 +39,11 @@ class Cursor {
         // cursorMaterial.emissiveColor = new Color3(0.1, 0.1, 0.1);
         cursorMaterial.alpha = 0.7;
         mesh.material = cursorMaterial;
+        // cursorMaterial.needDepthPrePass = false
+        // Render later than other transparent meshes
+        // See: https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering
+        mesh.renderingGroupId = 1
+        mesh.alphaIndex = 1
         this.mesh = mesh
     }
 
@@ -74,9 +84,11 @@ class Character {
             cursorMaterial.diffuseColor = Color3.Blue();
         else
             cursorMaterial.diffuseColor = Color3.Green();
-        // cursorMaterial.emissiveColor = new Color3(0.1, 0.1, 0.1);
-        cursorMaterial.alpha = 0.7;
+        cursorMaterial.emissiveColor = new Color3(0.1, 0.1, 0.1);
+        cursorMaterial.alpha = 0.75;
         mesh.material = cursorMaterial;
+        mesh.renderingGroupId = 0
+        mesh.alphaIndex = 0
         this.mesh = mesh
     }
 
@@ -102,23 +114,6 @@ class Character {
 
 class GameUI {
 
-    /** @param {string} input **/
-    onInput(input) {
-        if (!this.myTurn()) return
-        this.gameState.update(input)
-    }
-
-    /** @param {Record} result **/
-    onResult(result) {
-        console.log("result", result)
-        const name = simpleRecordName(result)
-        if (name === "PlayerOverseeResult") {
-            this.onPlayerOverseeResult(result)
-        } else {
-            console.error(`Unknown Result: ${name}`, result)
-        }
-    }
-
     /** @param {DomainDto_PlayerOverseeResult} result **/
     onPlayerOverseeResult(result) {
         this.gameState.turnOf = result.player
@@ -134,6 +129,43 @@ class GameUI {
             } else {
                 this.cursor.moveCursor(input)
             }
+        }
+    }
+
+    /** @param {DomainDto_PlayerMoveSelectionResult} result **/
+    onPlayerMoveSelectionResult(result) {
+        this.highlight(result.availableMoves)
+        this.gameState.update = (input) => {
+            if (input === Input.Enter) {
+                const c = this.findCharacter(this.cursor.positionDto)
+                if (!c) return;
+                updateServer(new DomainDto_IMessage(
+                    0, [c.id]
+                ), this.gameInfo)
+
+            } else {
+                this.cursor.moveCursor(input)
+            }
+        }
+    }
+
+    /** @param {string} input **/
+    onInput(input) {
+        if (!this.myTurn()) return
+        this.gameState.update(input)
+    }
+
+    /** @param {Record} result **/
+    onResult(result) {
+        console.log("result", result)
+        const name = simpleRecordName(result)
+        if (name === "PlayerOverseeResult") {
+            this.onPlayerOverseeResult(result)
+        } else if (name === "PlayerMoveSelectionResult") {
+            this.onPlayerMoveSelectionResult(result)
+        }
+        else {
+            console.error(`Unknown Result: ${name}`, result)
         }
     }
 
@@ -154,8 +186,31 @@ class GameUI {
      */
     findCharacter(pos) {
         return [...this.characters.values()].find(
-            c => c.positionDto.row === pos.row && c.positionDto.col === pos.col
+            c => c.positionDto.Equals(pos)
         )
+    }
+
+    /**
+     * @param {Array<DomainDto_PositionDto>} positions
+     */
+    highlight(positions) {
+        const highlightMaterial = new StandardMaterial("highlightmat", this.engineInfo.scene);
+        highlightMaterial.diffuseColor = Color3.Teal();
+        highlightMaterial.emissiveColor = new Color3(0.1, 0.1, 0.1);
+        highlightMaterial.alpha = 0.3;
+        this.highlightMeshes = []
+        for (const [i, pos] of positions.entries()) {
+            const mesh = MeshBuilder.CreateBox(`highlight${i}`, {depth: 1, width: 1, height: 0.1}, this.engineInfo.scene);
+            mesh.material = highlightMaterial
+            mesh.position = positionDtoToVec3(pos)
+            this.highlightMeshes.push(mesh)
+        }
+    }
+
+    removeHighlight() {
+        for (const mesh of this.highlightMeshes) {
+            mesh.dispose()
+        }
     }
 
     /**
@@ -196,6 +251,7 @@ class GameUI {
         const canvas = document.getElementById("map-canvas")
         const engine = new Engine(canvas)
         const scene = new Scene(engine)
+        // scene.useOrderIndependentTransparency = true;
         const camera = new ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 4, 15, Vector3.Zero());
 
         camera.attachControl(canvas, true);
