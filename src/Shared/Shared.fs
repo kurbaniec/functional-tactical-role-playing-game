@@ -67,6 +67,7 @@ module DomainDto =
     type IMessage =
         | SelectCharacterDto of string
         | DeselectCharacterDto
+        | MoveCharacterDto of PositionDto
 
     type StartResult =
         { id: string

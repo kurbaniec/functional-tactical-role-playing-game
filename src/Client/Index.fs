@@ -190,7 +190,7 @@ let updateServer (msg: IMessage) (gameInfo: GameInfo) : Promise<unit> =
 
 let game = GameUI.create ()
 
-let testo = DeselectCharacterDto
+let testo = MoveCharacterDto { row = 0; col = 0 }
 JS.console.log(testo)
 
 // async {

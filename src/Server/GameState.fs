@@ -37,24 +37,29 @@ module PlayerOverseeState =
 
 module PlayerMoveState =
     let deselectCharacter (p: Player) (state: PlayerMove) : GameStateUpdate =
-        let msg =  [ PlayerOversee p ]
+        let msg = [ PlayerOversee p ]
+
         let state =
-                PlayerOverseeState
-                    { details = state.details
-                      awaitingTurns = state.awaitingTurns
-                    }
+            PlayerOverseeState
+                { details = state.details
+                  awaitingTurns = state.awaitingTurns }
+
         (msg, state)
 
-    let moveCharacter (pos: CellPosition) (state: PlayerMove): GameStateUpdate =
+    let moveCharacter (pos: CellPosition) (state: PlayerMove) : GameStateUpdate =
         if not <| List.contains pos state.availableMoves then
             ([], PlayerMoveState(state))
         else
-            let newBoard =
-                state.details.board
-                |> Board.moveCharacter state.character.id pos
-            let msg = [ CharacterUpdate (state.character.id) ]
+            let newBoard = state.details.board |> Board.moveCharacter state.character.id pos
+            let msg = [ CharacterUpdate(state.character.id) ]
             let details = { state.details with board = newBoard }
-            let state = PlayerActionState
+
+            let state =
+                PlayerActionState
+                    { details = details
+                      awaitingTurns = state.awaitingTurns
+                      character = state.character }
+
             (msg, state)
 
 

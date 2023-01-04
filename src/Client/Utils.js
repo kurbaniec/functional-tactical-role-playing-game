@@ -48,14 +48,16 @@ export function vec3ToPositionDto(vec3) {
 
 // See: https://stackoverflow.com/a/2549333
 export function eachRecursive(thisModel, model) {
+    console.log(thisModel)
+    console.log(model)
     for (let key in model) {
         if (typeof model[key] == "object" && model[key] !== null) {
             if (thisModel[key] === null)
                 thisModel[key] = {}
             eachRecursive(thisModel[key], model[key])
         }
-        else {
-            thisModel[key] = model
+        else if (model[key]) {
+            thisModel[key] = model[key]
         }
     }
 }

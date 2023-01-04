@@ -122,6 +122,7 @@ class GameUI {
         this.gameState.update = (input) => {
             if (input === Input.Enter) {
                 const c = this.findCharacter(this.cursor.positionDto)
+                console.log("oversee-c", c)
                 if (!c) return;
                 updateServer(new DomainDto_IMessage(
                 0, [c.id]
@@ -139,10 +140,9 @@ class GameUI {
         this.highlight(result.availableMoves)
         this.gameState.update = (input) => {
             if (input === Input.Enter) {
-                const c = this.findCharacter(this.cursor.positionDto)
-                if (!c) return;
+                const pos = this.cursor.positionDto
                 updateServer(new DomainDto_IMessage(
-                    0, [c.id]
+                    2, pos
                 ), this.gameInfo)
 
             } if (input === Input.Escape) {
@@ -152,6 +152,14 @@ class GameUI {
                 this.showCharacterInfo(this.cursor.positionDto)
             }
         }
+    }
+
+    /** @param {DomainDto_CharacterUpdateResult} result */
+    onCharacterUpdate(result) {
+        console.log(result)
+        const c = this.characters.get(result.character.id)
+        console.log("c", c)
+        if (c) c.updateModel(result.character)
     }
 
     /** @param {string} input **/
@@ -168,6 +176,8 @@ class GameUI {
             this.onPlayerOverseeResult(result)
         } else if (name === "PlayerMoveSelectionResult") {
             this.onPlayerMoveSelectionResult(result)
+        } else if (name === "CharacterUpdateResult") {
+            this.onCharacterUpdate(result)
         }
         else {
             console.error(`Unknown Result: ${name}`, result)

@@ -187,7 +187,7 @@ type PlayerAction =
 type GameState =
     | PlayerOverseeState of PlayerOversee
     | PlayerMoveState of PlayerMove
-    | PlayerActionState
+    | PlayerActionState of PlayerAction
     | Player1Wins
     | Player2Wins
 
@@ -196,6 +196,7 @@ module GameState =
         match gs with
         | PlayerOverseeState s -> s.details
         | PlayerMoveState s -> s.details
+        | PlayerActionState s -> s.details
         | _ -> failwith "gamestate overview"
 
     let turnOf (gs: GameState) : Player = gs |> details |> fun d -> d.turnOf
