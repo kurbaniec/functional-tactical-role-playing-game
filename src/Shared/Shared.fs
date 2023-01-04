@@ -54,8 +54,10 @@ module DomainDto =
         { id: string
           name: string
           classification: CharacterClassDto
+          position: Option<PositionDto>
+          player: Option<PlayerDto>
           properties: System.Collections.Generic.Dictionary<string, Object>
-          position: Option<PositionDto> }
+        }
 
 
     type PlaceCharacterDto =

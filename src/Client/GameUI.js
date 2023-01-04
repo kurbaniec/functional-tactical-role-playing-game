@@ -1,5 +1,5 @@
 ﻿// See: https://github.com/fable-compiler/fable3-samples/blob/main/interopFableFromJS/src/index.js
-import {init, update, GameInfo, sendMessage} from "./output/Index.js"
+import {init, pollServer, GameInfo, updateServer} from "./output/Index.js"
 import {DomainDto_CharacterDto, DomainDto_IMessage, DomainDto_IResult} from "./output/Shared/Shared";
 import {boardPosToVec3, coerceIn, positionDtoToVec3, simpleRecordName, unwrap} from "./Utils";
 import {
@@ -80,7 +80,7 @@ class GameUI {
             0, [GameUI.cid]
         )
         console.log("msg", msg)
-        sendMessage(msg, this.gameInfo)
+        updateServer(msg, this.gameInfo)
     }
 
     /** @param {Record} result **/
@@ -98,7 +98,7 @@ class GameUI {
         while (this.isPolling) {
             await new Promise(resolve => setTimeout(resolve, 100));
             /** @type {DomainDto_IResult} */
-            const result = await update(this.gameInfo)
+            const result = await pollServer(this.gameInfo)
             if (result) this.onResult(unwrap(result))
         }
     }
@@ -123,7 +123,7 @@ class GameUI {
         /** @type {GameInfo} */
         const gameInfo = await init();
         /** @type {DomainDto_IResult} */
-        const startInfoUnion = await update(gameInfo);
+        const startInfoUnion = await pollServer(gameInfo);
         /** @type {DomainDto_StartResult} */
         const startInfo = unwrap(startInfoUnion)
         if (startInfo.constructor.name !== "DomainDto_StartResult")
@@ -203,6 +203,7 @@ class GameUI {
         }
 
         for (const c of startInfo.characters) {
+            console.log("character", c)
             this.cid = c.id
             new Character(c, scene)
         }

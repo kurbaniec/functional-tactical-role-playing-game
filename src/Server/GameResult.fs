@@ -39,7 +39,12 @@ let intoClsDto (cls: CharacterClass) : CharacterClassDto =
     | Bow -> CharacterClassDto.Bow
     | Support -> CharacterClassDto.Support
 
-let intoCharacterDto (c: Character) (b: Option<Board>) : CharacterDto =
+let intoPlayerDto (player: Player) : PlayerDto =
+    match player with
+    | Player1 -> PlayerDto.Player1
+    | Player2 -> PlayerDto.Player2
+
+let intoCharacterDto (c: Character) (b: Option<Board>) (p: Option<Player>) : CharacterDto =
     let id = c.id.ToString()
     let name = c.name
     let cls = intoClsDto c.classification
@@ -52,16 +57,17 @@ let intoCharacterDto (c: Character) (b: Option<Board>) : CharacterDto =
         | Some b -> Board.findCharacter c.id b |> intoPositionDto |> Some
         | None -> None
 
+    let player =
+        match p with
+        | Some p -> p |> intoPlayerDto |> Some
+        | None -> None
+
     { id = id
       name = name
       classification = cls
       properties = properties
-      position = position }
-
-let intoPlayerDto (player: Player) : PlayerDto =
-    match player with
-    | Player1 -> PlayerDto.Player1
-    | Player2 -> PlayerDto.Player2
+      position = position
+      player = player }
 
 let intoStartDto (gid: GameId) (game: GameDetails) =
     let boardDto = intoBoardDto game.board
@@ -69,7 +75,7 @@ let intoStartDto (gid: GameId) (game: GameDetails) =
     let characters =
         game.player1Characters.Values
         |> ResizeArray
-        |> ResizeArray.map (fun c -> intoCharacterDto c (Some game.board))
+        |> ResizeArray.map (fun c -> intoCharacterDto c <| Some game.board <| Some Player1)
 
     StartResult
         { id = gid.ToString()

@@ -180,11 +180,11 @@ let init () : Promise<GameInfo> =
     }
     |> Async.StartAsPromise
 
-let update (gameInfo: GameInfo) : Promise<Option<IResult>> =
+let pollServer (gameInfo: GameInfo) : Promise<Option<IResult>> =
     async { return! todosApi.poll gameInfo.id gameInfo.player }
     |> Async.StartAsPromise
 
-let sendMessage (msg: IMessage) (gameInfo: GameInfo) : Promise<unit> =
+let updateServer (msg: IMessage) (gameInfo: GameInfo) : Promise<unit> =
     async { return! todosApi.update gameInfo.id gameInfo.player msg }
     |> Async.StartAsPromise
 
