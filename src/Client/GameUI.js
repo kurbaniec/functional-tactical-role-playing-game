@@ -14,7 +14,7 @@ import {
     positionDtoToVec3,
     simpleRecordName,
     unwrap,
-    vec3ToPositionDto
+    vec3ToPositionDto, wrapText
 } from "./Utils";
 import {
     ArcRotateCamera, Color3,
@@ -128,6 +128,7 @@ class GameUI {
 
             } else {
                 this.cursor.moveCursor(input)
+                this.showCharacterInfo(this.cursor.positionDto)
             }
         }
     }
@@ -145,6 +146,7 @@ class GameUI {
 
             } else {
                 this.cursor.moveCursor(input)
+                this.showCharacterInfo(this.cursor.positionDto)
             }
         }
     }
@@ -213,6 +215,15 @@ class GameUI {
         }
     }
 
+    /** @param {DomainDto_PositionDto} pos */
+    showCharacterInfo(pos) {
+        const c = this.findCharacter(pos)
+        if (!c) return;
+        // See: https://stackoverflow.com/a/16862775
+        const canvas = document.getElementById("info-canvas")
+        canvas.textContent = JSON.stringify(c.model, undefined, 2)
+    }
+
     /**
      * @param {GameInfo} gameInfo
      * @param gameState
@@ -235,8 +246,6 @@ class GameUI {
         this.isPolling = true
         const _ = this.poll()
     }
-
-    static cid = ""
 
     static async create() {
         /** @type {GameInfo} */
