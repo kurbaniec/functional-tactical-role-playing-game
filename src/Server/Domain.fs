@@ -67,8 +67,10 @@ type Player =
     | Player1
     | Player2
 
+type ActionName = string
+
 type Action =
-    { name: string
+    { name: ActionName
       distance: Distance
       applicableTo: ApplicableTo
       perform: ActionPerformer
@@ -197,13 +199,16 @@ type PlayerAction =
     {
         details: GameDetails
         awaitingTurns: Characters
+        action: Action
     }
 
-
+// TODO: merge game details + state
+// details top level record prop with union state
 type GameState =
     | PlayerOverseeState of PlayerOversee
     | PlayerMoveState of PlayerMove
     | PlayerActionSelectState of PlayerActionSelect
+    | PlayerActionState of PlayerAction
     | Player1Wins
     | Player2Wins
 
@@ -213,6 +218,7 @@ module GameState =
         | PlayerOverseeState s -> s.details
         | PlayerMoveState s -> s.details
         | PlayerActionSelectState s -> s.details
+        | PlayerActionState s -> s.details
         | _ -> failwith "gamestate overview"
 
     let turnOf (gs: GameState) : Player = gs |> details |> fun d -> d.turnOf
@@ -220,10 +226,13 @@ module GameState =
 type GameId = System.Guid
 type Game = { id: GameId; state: GameState }
 
+// TODO move player out?
 type GameMessage =
     | SelectCharacter of Player * CharacterId
     | DeselectCharacter of Player
     | MoveCharacter of Player * CellPosition
+    | SelectAction of Player * ActionName
+    | DeselectAction of Player
 
 // TODO: Make tuples?
 // See: https://github.com/fsharp/fslang-suggestions/issues/743
@@ -232,6 +241,7 @@ type GameResult =
     | PlayerOversee of Player
     | PlayerMoveSelection of Player * CharacterId * list<CellPosition>
     | CharacterUpdate of CharacterId
+    | PlayerActionSelection of Player * Actions
 
 
 module GameResult =
@@ -245,3 +255,4 @@ module GameResult =
         | PlayerOversee _ -> AllRecipients
         | PlayerMoveSelection (p, _, _) -> PlayerRecipient p
         | CharacterUpdate _ -> AllRecipients
+        | PlayerActionSelection(p, _) -> PlayerRecipient p

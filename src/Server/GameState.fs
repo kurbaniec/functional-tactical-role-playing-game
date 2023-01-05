@@ -54,12 +54,15 @@ module PlayerMoveState =
             let msg = [ CharacterUpdate(state.character.id) ]
             let details = { state.details with board = newBoard }
 
+            // TODO: filter for actions that can be executed
+            // distance check characters
             let state =
                 PlayerActionSelectState
                     { details = details
                       awaitingTurns = state.awaitingTurns
                       character = state.character
                       availableActions = state.character.actions }
+            // TODO: send action state select message
 
             (msg, state)
 
@@ -69,3 +72,29 @@ module PlayerMoveState =
         | DeselectCharacter (p) -> deselectCharacter p state
         | MoveCharacter (_, pos) -> moveCharacter pos state
         | _ -> ([], PlayerMoveState(state))
+
+module PlayerActionSelectState =
+    let selectAction (p: Player) (an: ActionName) (state: PlayerActionSelect) =
+        let action = state.availableActions |> List.tryFind (fun a -> a.name = an)
+        match action with
+        | None -> ([], PlayerActionSelectState(state))
+        | Some action ->
+
+            // TODO msg
+            let msg = []
+            let state =
+                PlayerActionState
+                    { details = state.details
+                      awaitingTurns = state.awaitingTurns
+                      action = action
+                       }
+
+            (msg, state)
+
+
+
+
+    let update (msg: GameMessage) (state: PlayerActionSelect) : GameStateUpdate =
+        match msg with
+        | SelectAction(p, a) -> selectAction p a state
+        | _ -> ([], PlayerActionSelectState (state))

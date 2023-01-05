@@ -59,12 +59,6 @@ let newGame (_: unit) : List<GameResult> * Game =
 let isCorrectPlayer (player: Player) (game: Game) =
     game.state |> GameState.details |> fun d -> d.turnOf = player
 
-let onPlayerMoveState (msg: GameMessage) (state: PlayerMove) : List<GameResult> * GameState =
-
-
-    ([], PlayerMoveState(state))
-
-
 
 let update (player: Player) (msg: GameMessage) (game: Game) : List<GameResult> * Game =
     // TODO rewrite as result type
@@ -74,5 +68,6 @@ let update (player: Player) (msg: GameMessage) (game: Game) : List<GameResult> *
         match game.state with
         | PlayerOverseeState s -> PlayerOverseeState.update msg s
         | PlayerMoveState s -> PlayerMoveState.update msg s
+        | PlayerActionSelectState s -> PlayerActionSelectState.update msg s
         | _ -> failwith "update"
         |> fun (r, s) -> (r, { game with state = s })
