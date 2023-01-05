@@ -55,10 +55,11 @@ module PlayerMoveState =
             let details = { state.details with board = newBoard }
 
             let state =
-                PlayerActionState
+                PlayerActionSelectState
                     { details = details
                       awaitingTurns = state.awaitingTurns
-                      character = state.character }
+                      character = state.character
+                      availableActions = state.character.actions }
 
             (msg, state)
 

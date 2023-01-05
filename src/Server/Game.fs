@@ -11,11 +11,21 @@ let newGame (_: unit) : List<GameResult> * Game =
     let name = "Swordsman"
     let cls = CharacterClass.Sword
 
+    let endTurn =
+        { name = "End"
+          distance = Distance 0
+          applicableTo = fun p c -> c.id = cid
+          perform = End }
+
+
+    let applicableTo p c = p = Player2
+
     let actions =
-        [ Attack
-              { value = ActionValue 1
-                distance = Distance 1
-                applicable = ApplicableTo.Enemies } ]
+        [ { name = "Attack"
+            distance = Distance 1
+            applicableTo = applicableTo
+            perform = Attack }
+          endTurn ]
 
     let movement =
         { t = MovementType.Foot
@@ -38,10 +48,9 @@ let newGame (_: unit) : List<GameResult> * Game =
           player2Characters = Map []
           board = board }
 
-    let playerOversee = {
-        details = gameDetails
-        awaitingTurns = gameDetails.player1Characters
-    }
+    let playerOversee =
+        { details = gameDetails
+          awaitingTurns = gameDetails.player1Characters }
 
     let player1Oversee = PlayerOverseeState(playerOversee)
 
@@ -50,10 +59,7 @@ let newGame (_: unit) : List<GameResult> * Game =
 let isCorrectPlayer (player: Player) (game: Game) =
     game.state |> GameState.details |> fun d -> d.turnOf = player
 
-let onPlayerMoveState
-    (msg: GameMessage)
-    (state: PlayerMove)
-    : List<GameResult> * GameState =
+let onPlayerMoveState (msg: GameMessage) (state: PlayerMove) : List<GameResult> * GameState =
 
 
     ([], PlayerMoveState(state))

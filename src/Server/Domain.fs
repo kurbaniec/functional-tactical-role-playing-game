@@ -42,45 +42,58 @@ type CharacterClass =
 type ActionValue = ActionValue of int
 let value (ActionValue v) = v
 
-type ApplicableTo =
-    | Self
-    | SelfAndAllies
-    | Enemies
+// type ApplicableTo =
+//     | Self
+//     | SelfAndAllies
+//     | Enemies
 
+// type Attack =
+//     {
+//       value: ActionValue
+//       distance: Distance
+//       applicable: ApplicableTo }
+//
+// type Heal =
+//     { value: ActionValue
+//       distance: Distance
+//       applicable: ApplicableTo }
+//
+// type Defend =
+//     { value: ActionValue
+//       distance: Distance
+//       applicable: ApplicableTo }
 
-
-
-
-type Attack =
-    { value: ActionValue
-      distance: Distance
-      applicable: ApplicableTo }
-
-type Heal =
-    { value: ActionValue
-      distance: Distance
-      applicable: ApplicableTo }
-
-type Defend =
-    { value: ActionValue
-      distance: Distance
-      applicable: ApplicableTo }
+type Player =
+    | Player1
+    | Player2
 
 type Action =
-    | Attack of Attack
-    | Heal of Heal
-    | Defend of Defend
+    { name: string
+      distance: Distance
+      applicableTo: ApplicableTo
+      perform: ActionPerformer
+    }
 
-type Actions = List<Action>
+and ApplicableTo = Player -> Character -> bool
+and ActionPerformer =
+    | Attack
+    | Heal
+    | Defend
+    | End
 
-type CharacterId = System.Guid
+and Actions = List<Action>
 
-type Character =
+and CharacterId = System.Guid
+
+and Character =
     { id: CharacterId
       name: string
       classification: CharacterClass
       actions: Actions
       movement: Movement }
+
+and Characters = Map<CharacterId, Character>
+
 
 type Occupied = Option<CharacterId>
 
@@ -139,11 +152,7 @@ module CellPosition =
 
 type Board = Map<Row, Map<Col, Tile>>
 
-type Characters = Map<CharacterId, Character>
 
-type Player =
-    | Player1
-    | Player2
 
 type GameDetails =
     { turnOf: Player
@@ -177,17 +186,24 @@ type PlayerMove =
       availableMoves: list<CellPosition>
        }
 
-type PlayerAction =
+type PlayerActionSelect =
     { details: GameDetails
       awaitingTurns: Characters
       character: Character
+      availableActions: Actions
+    }
+
+type PlayerAction =
+    {
+        details: GameDetails
+        awaitingTurns: Characters
     }
 
 
 type GameState =
     | PlayerOverseeState of PlayerOversee
     | PlayerMoveState of PlayerMove
-    | PlayerActionState of PlayerAction
+    | PlayerActionSelectState of PlayerActionSelect
     | Player1Wins
     | Player2Wins
 
@@ -196,7 +212,7 @@ module GameState =
         match gs with
         | PlayerOverseeState s -> s.details
         | PlayerMoveState s -> s.details
-        | PlayerActionState s -> s.details
+        | PlayerActionSelectState s -> s.details
         | _ -> failwith "gamestate overview"
 
     let turnOf (gs: GameState) : Player = gs |> details |> fun d -> d.turnOf

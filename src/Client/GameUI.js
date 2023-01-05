@@ -11,7 +11,7 @@ import {
     coerceIn,
     eachRecursive,
     Player,
-    positionDtoToVec3,
+    positionDtoToVec3, setVec3FromPositionDto,
     simpleRecordName,
     unwrap,
     vec3ToPositionDto, wrapText
@@ -96,6 +96,7 @@ class Character {
     updateModel(model) {
         console.log("before update model", this.model)
         eachRecursive(this.model, model)
+        setVec3FromPositionDto(this.mesh.position, this.model.position)
         console.log("after update model", this.model)
     }
 

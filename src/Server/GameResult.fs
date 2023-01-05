@@ -97,8 +97,9 @@ let intoPlayerMoveSelectionDto
           availableMoves = availableMoves |> List.map intoPositionDto |> ResizeArray }
 
 // TODO: Move somewhere else
+// See: https://stackoverflow.com/a/3974842
 let join (p:Map<'a,'b>) (q:Map<'a,'b>) =
-    Map(Seq.concat [ (Map.toSeq p) ; (Map.toSeq q) ])
+    Map.fold (fun acc key value -> Map.add key value acc) p q
 
 let intoCharacterUpdateDto (cid: CharacterId) (game: GameDetails) =
     let character =

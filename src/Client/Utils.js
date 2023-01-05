@@ -46,10 +46,17 @@ export function vec3ToPositionDto(vec3) {
     return new DomainDto_PositionDto(vec3.x, -vec3.z)
 }
 
+/**
+ * @param {Vector3} vec3
+ * @param {DomainDto_PositionDto} pos
+ */
+export function setVec3FromPositionDto(vec3, pos) {
+    vec3.x = pos.row
+    vec3.z = -pos.col
+}
+
 // See: https://stackoverflow.com/a/2549333
 export function eachRecursive(thisModel, model) {
-    console.log(thisModel)
-    console.log(model)
     for (let key in model) {
         if (typeof model[key] == "object" && model[key] !== null) {
             if (thisModel[key] === null)
