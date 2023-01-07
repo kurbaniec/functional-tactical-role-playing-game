@@ -109,15 +109,15 @@ let intoCharacterUpdateDto (cid: CharacterId) (game: GameDetails) =
 
     CharacterUpdateResult { character = character }
 
-let intoActionSelectionDto (action: SelectableAction) : SelectableActionDto =
-    let applicableTo =
-        action.applicableCharacters |> List.map (fun c -> c.ToString()) |> ResizeArray
-
-    { name = action.action.name
-      applicableTo = applicableTo }
+// let intoActionSelectionDto (action: SelectableAction) : SelectableActionDto =
+// let applicableTo =
+//     action.applicableCharacters |> List.map (fun c -> c.ToString()) |> ResizeArray
+//
+// { name = action.action.name
+//   applicableTo = applicableTo }
 
 let intoPlayerActionSelectionDto (p: Player) (actions: ApplicableActions) =
-    PlayerActionSelectionResult { availableActions = actions |> List.map intoActionSelectionDto |> ResizeArray }
+    PlayerActionSelectionResult { availableActions = actions |> List.map (fun a -> a.action.name) |> ResizeArray }
 
 
 let intoDto (gameResult: GameResult) (game: GameDetails) =

@@ -145,7 +145,7 @@ class Selector {
     }
 
     clear() {
-        this.mesh.removeControl(this.panel)
+        if (this.panel) this.mesh.removeControl(this.panel)
     }
 
     /** @param {string} input **/
@@ -157,7 +157,6 @@ class Selector {
         else if (input === Input.Down) {
             this.index = modulo((lastIndex - 1), this.length)
         }
-        console.log("index", lastIndex, this.index)
         this.removeHighlight(lastIndex)
         this.highlight(this.index)
     }
@@ -172,9 +171,7 @@ class Selector {
     }
 
     removeHighlight(index) {
-        console.log("pp", this.panel.children)
         const ui = this.panel.children[index]
-        console.log("pp", ui)
         ui.background = "black";
     }
 
@@ -187,8 +184,9 @@ class GameUI {
     /** @param {DomainDto_PlayerOverseeResult} result **/
     onPlayerOverseeResult(result) {
         this.gameState.turnOf = result.player
-        if (!this.myTurn()) return;
         this.removeHighlight();
+        this.selection.clear();
+        if (!this.myTurn()) return;
         this.gameState.update = (input) => {
             if (input === Input.Enter) {
                 const c = this.findCharacter(this.cursor.positionDto)
@@ -230,11 +228,10 @@ class GameUI {
         this.selection.setSelections(result.availableActions)
         this.gameState.update = (input) => {
             if (input === Input.Enter) {
-                console.log("sel", this.selection.currentSelection())
-                // const pos = this.cursor.positionDto
-                // updateServer(new DomainDto_IMessage(
-                //     2, pos
-                // ), this.gameInfo)
+                const selection = this.selection.currentSelection()
+                updateServer(new DomainDto_IMessage(
+                    3, selection
+                ), this.gameInfo)
             } else {
                 this.selection.moveCursor(input)
                 // this.showCharacterInfo(this.cursor.positionDto)

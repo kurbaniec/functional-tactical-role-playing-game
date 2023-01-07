@@ -8,6 +8,7 @@ module PlayerOverseeState =
     let selectCharacter (p: Player) (c: CharacterId) (state: PlayerOversee) : GameStateUpdate =
         let character = state.details |> GameDetails.characters p |> Map.tryFind c
 
+        // TODO: check if character was already moved
         match character with
         | None -> ([], PlayerOverseeState(state))
         | Some c ->

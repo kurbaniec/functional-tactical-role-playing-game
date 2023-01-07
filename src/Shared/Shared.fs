@@ -69,6 +69,7 @@ module DomainDto =
         | DeselectCharacterDto
         | MoveCharacterDto of PositionDto
         | SelectActionDto of string
+        | DeselectActionDto
 
     type StartResult =
         { id: string
@@ -85,11 +86,13 @@ module DomainDto =
         character: CharacterDto
     }
 
-    type SelectableActionDto = {
-        name: string
-        applicableTo: ResizeArray<string>
-    }
-
+    // type SelectableActionDto = {
+    //     action: string
+    //     // applicableTo: ResizeArray<string>
+    // }
+    //
+    //
+    type SelectableActionDto = string
     type PlayerActionSelectionResult = {
         availableActions: ResizeArray<SelectableActionDto>
     }
