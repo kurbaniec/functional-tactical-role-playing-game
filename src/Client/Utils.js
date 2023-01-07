@@ -68,3 +68,8 @@ export function eachRecursive(thisModel, model) {
         }
     }
 }
+
+// See: https://stackoverflow.com/questions/8900652/what-does-do-in-javascript
+export function modulo(n, m) {
+    return ((n % m) + m) % m;
+}

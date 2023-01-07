@@ -1,31 +1,30 @@
 ﻿// See: https://github.com/fable-compiler/fable3-samples/blob/main/interopFableFromJS/src/index.js
-import {init, pollServer, GameInfo, updateServer, game} from "./output/Index.js"
-import {
-    DomainDto_CharacterDto,
-    DomainDto_IMessage,
-    DomainDto_IResult,
-    DomainDto_PlayerMoveSelectionResult$reflection
-} from "./output/Shared/Shared";
+import {GameInfo, init, pollServer, updateServer} from "./output/Index.js"
+import {DomainDto_CharacterDto, DomainDto_IMessage, DomainDto_IResult} from "./output/Shared/Shared";
 import {
     boardPosToVec3,
-    coerceIn,
-    eachRecursive,
+    eachRecursive, modulo,
     Player,
-    positionDtoToVec3, setVec3FromPositionDto,
+    positionDtoToVec3,
+    setVec3FromPositionDto,
     simpleRecordName,
     unwrap,
-    vec3ToPositionDto, wrapText
+    vec3ToPositionDto
 } from "./Utils";
 import {
-    ArcRotateCamera, Color3,
+    ArcRotateCamera,
+    Color3,
     Engine,
-    HemisphericLight, KeyboardEventTypes,
-    MeshBuilder, MultiMaterial,
+    HemisphericLight,
+    MeshBuilder,
+    MultiMaterial,
     Scene,
-    StandardMaterial, SubMesh,
+    StandardMaterial,
+    SubMesh,
     Vector3
 } from "@babylonjs/core";
 import {Input, InputManager} from "./InputManager"
+import {AdvancedDynamicTexture, InputText, StackPanel, TextBlock} from "@babylonjs/gui";
 
 
 class Cursor {
@@ -113,6 +112,76 @@ class Character {
     }
 }
 
+class Selector {
+
+    /**
+     * @param {Array<string>} selections
+     */
+    constructor(selections) {
+        this.mesh = AdvancedDynamicTexture.CreateFullscreenUI("UI")
+        this.setSelections(selections)
+    }
+
+    /** @param {Array<string>} selections */
+    setSelections(selections) {
+        if (!selections || selections.length === 0) return
+        const panel = new StackPanel()
+        selections.forEach(s => {
+            // TODO: better way?
+            const ui = new InputText()
+            ui.width = "150px";
+            ui.maxWidth = 0.2;
+            ui.height = "40px";
+            ui.color = "white";
+            ui.background = "black";
+            ui.text = s
+            panel.addControl(ui)
+        })
+        this.panel = panel
+        this.mesh.addControl(this.panel)
+        this.length = panel.children.length
+        this.index = this.length-1
+        this.moveCursor(Input.Down)
+    }
+
+    clear() {
+        this.mesh.removeControl(this.panel)
+    }
+
+    /** @param {string} input **/
+    moveCursor(input) {
+        const lastIndex = this.index
+        if (input === Input.Up) {
+            this.index = modulo((lastIndex + 1), this.length)
+        }
+        else if (input === Input.Down) {
+            this.index = modulo((lastIndex - 1), this.length)
+        }
+        console.log("index", lastIndex, this.index)
+        this.removeHighlight(lastIndex)
+        this.highlight(this.index)
+    }
+
+    currentSelection() {
+        return this.panel.children[this.index].text
+    }
+
+    highlight(index) {
+        const ui = this.panel.children[index]
+        ui.background = "green";
+    }
+
+    removeHighlight(index) {
+        console.log("pp", this.panel.children)
+        const ui = this.panel.children[index]
+        console.log("pp", ui)
+        ui.background = "black";
+    }
+
+
+
+}
+
 class GameUI {
 
     /** @param {DomainDto_PlayerOverseeResult} result **/
@@ -138,7 +207,7 @@ class GameUI {
 
     /** @param {DomainDto_PlayerMoveSelectionResult} result **/
     onPlayerMoveSelectionResult(result) {
-        this.highlight(result.availableMoves)
+        this.highlightPositions(result.availableMoves)
         this.gameState.update = (input) => {
             if (input === Input.Enter) {
                 const pos = this.cursor.positionDto
@@ -154,6 +223,26 @@ class GameUI {
             }
         }
     }
+
+    /** @param {DomainDto_PlayerActionSelectionResult} result **/
+    onPlayerActionSelectionResult(result) {
+        this.removeHighlight()
+        this.selection.setSelections(result.availableActions)
+        this.gameState.update = (input) => {
+            if (input === Input.Enter) {
+                console.log("sel", this.selection.currentSelection())
+                // const pos = this.cursor.positionDto
+                // updateServer(new DomainDto_IMessage(
+                //     2, pos
+                // ), this.gameInfo)
+            } else {
+                this.selection.moveCursor(input)
+                // this.showCharacterInfo(this.cursor.positionDto)
+            }
+        }
+    }
+
+
 
     /** @param {DomainDto_CharacterUpdateResult} result */
     onCharacterUpdate(result) {
@@ -179,6 +268,8 @@ class GameUI {
             this.onPlayerMoveSelectionResult(result)
         } else if (name === "CharacterUpdateResult") {
             this.onCharacterUpdate(result)
+        } else if (name === "PlayerActionSelectionResult") {
+            this.onPlayerActionSelectionResult(result)
         }
         else {
             console.error(`Unknown Result: ${name}`, result)
@@ -209,7 +300,7 @@ class GameUI {
     /**
      * @param {Array<DomainDto_PositionDto>} positions
      */
-    highlight(positions) {
+    highlightPositions(positions) {
         const highlightMaterial = new StandardMaterial("highlightmat", this.engineInfo.scene);
         highlightMaterial.diffuseColor = Color3.Teal();
         highlightMaterial.emissiveColor = new Color3(0.1, 0.1, 0.1);
@@ -222,6 +313,8 @@ class GameUI {
             this.highlightMeshes.push(mesh)
         }
     }
+
+
 
     removeHighlight() {
         if (!this.highlightMeshes) return
@@ -258,6 +351,7 @@ class GameUI {
             boardPosToVec3(0, 0),
             this.engineInfo.scene
         )
+        this.selection = new Selector([])
         this.isPolling = true
         const _ = this.poll()
     }
