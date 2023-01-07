@@ -15,7 +15,7 @@ let newGame (_: unit) : List<GameResult> * Game =
         { name = "End"
           distance = Distance 0
           applicableTo = fun p c -> c.id = cid
-          perform = End }
+          kind = End }
 
 
     let applicableTo p c = p = Player2
@@ -24,7 +24,7 @@ let newGame (_: unit) : List<GameResult> * Game =
         [ { name = "Attack"
             distance = Distance 1
             applicableTo = applicableTo
-            perform = Attack }
+            kind = Attack }
           endTurn ]
 
     let movement =

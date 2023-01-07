@@ -75,9 +75,8 @@ module PlayerMoveState =
                     let predicate = predicate a.applicableTo
                     let applicableCharacters = newBoard |> Board.find pos a.distance predicate extract
 
-                    { name = a.name
-                      applicableCharacters = applicableCharacters
-                      perform = a.perform })
+                    { action = a
+                      applicableCharacters = applicableCharacters })
 
             let msg =
                 [ CharacterUpdate(state.character.id)
@@ -102,31 +101,51 @@ module PlayerMoveState =
 
 module PlayerActionSelectState =
     let selectAction (p: Player) (an: ActionName) (state: PlayerActionSelect) =
-        let action = state.availableActions |> List.tryFind (fun a -> a.name = an)
+        let action =
+            state.availableActions
+            |> List.tryFind (fun a -> a.action.name = an)
+            |> Option.map (fun a -> a.action)
 
         match action with
         | None -> ([], PlayerActionSelectState(state))
         | Some action ->
-            // TODO msg
-            let msg = []
-            // TODO perform action
+            match action.kind with
+            | End ->
+                // Dont require additional input
+                let awaitingTurns = state.awaitingTurns |> Map.remove state.character.id
 
-            // TODO perform updates
+                // TODO: check if awaitingTurns is empty
 
-            // TODO check win
-            let state =
-                PlayerActionState
-                    { details = state.details
-                      awaitingTurns = state.awaitingTurns
-                      character = state.character
-                      availableActions = state.availableActions
-                      action = action }
+                let msg = [ PlayerOversee p ]
 
-            (msg, state)
+                let state =
+                    PlayerOverseeState
+                        { details = state.details
+                          awaitingTurns = awaitingTurns }
+
+                (msg, state)
+            | _ ->
+
+
+                // TODO state result msg
+                let msg = []
+                // TODO perform action
+
+                // TODO perform updates
+
+                // TODO check win
+                let state =
+                    PlayerActionState
+                        { details = state.details
+                          awaitingTurns = state.awaitingTurns
+                          character = state.character
+                          availableActions = state.availableActions
+                          action = action }
+
+                (msg, state)
 
     let deselectAction (p: Player) (state: PlayerActionSelect) =
-        let msg =
-                [ PlayerActionSelection(p, state.availableActions) ]
+        let msg = [ PlayerActionSelection(p, state.availableActions) ]
 
         let state =
             PlayerActionSelectState

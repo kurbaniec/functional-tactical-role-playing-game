@@ -85,14 +85,13 @@ module DomainDto =
         character: CharacterDto
     }
 
-    type ActionSelection = {
+    type SelectableActionDto = {
         name: string
         applicableTo: ResizeArray<string>
     }
 
     type PlayerActionSelectionResult = {
-        character: string
-        availableActions: ResizeArray<ActionSelection>
+        availableActions: ResizeArray<SelectableActionDto>
     }
 
     type IResult =
@@ -100,7 +99,7 @@ module DomainDto =
         | PlayerOverseeResult of PlayerOverseeResult
         | PlayerMoveSelectionResult of PlayerMoveSelectionResult
         | CharacterUpdateResult of CharacterUpdateResult
-        | PlayerActionSelectionResult
+        | PlayerActionSelectionResult of PlayerActionSelectionResult
 
 
 

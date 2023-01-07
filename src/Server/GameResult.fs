@@ -109,6 +109,17 @@ let intoCharacterUpdateDto (cid: CharacterId) (game: GameDetails) =
 
     CharacterUpdateResult { character = character }
 
+let intoActionSelectionDto (action: SelectableAction) : SelectableActionDto =
+    let applicableTo =
+        action.applicableCharacters |> List.map (fun c -> c.ToString()) |> ResizeArray
+
+    { name = action.action.name
+      applicableTo = applicableTo }
+
+let intoPlayerActionSelectionDto (p: Player) (actions: ApplicableActions) =
+    PlayerActionSelectionResult { availableActions = actions |> List.map intoActionSelectionDto |> ResizeArray }
+
+
 let intoDto (gameResult: GameResult) (game: GameDetails) =
     let res: IResult =
         match gameResult with
@@ -116,6 +127,7 @@ let intoDto (gameResult: GameResult) (game: GameDetails) =
         | PlayerOversee player -> intoPlayerOverseeDto player game
         | PlayerMoveSelection (p, c, m) -> intoPlayerMoveSelectionDto p c m game
         | CharacterUpdate cid -> intoCharacterUpdateDto cid game
+        | PlayerActionSelection (p, a) -> intoPlayerActionSelectionDto p a
         | _ -> failwith "intoDto"
 
     res

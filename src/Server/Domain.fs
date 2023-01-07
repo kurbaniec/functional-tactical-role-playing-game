@@ -42,54 +42,41 @@ type CharacterClass =
 type ActionValue = ActionValue of int
 let value (ActionValue v) = v
 
-// type ApplicableTo =
-//     | Self
-//     | SelfAndAllies
-//     | Enemies
-
-// type Attack =
-//     {
-//       value: ActionValue
-//       distance: Distance
-//       applicable: ApplicableTo }
-//
-// type Heal =
-//     { value: ActionValue
-//       distance: Distance
-//       applicable: ApplicableTo }
-//
-// type Defend =
-//     { value: ActionValue
-//       distance: Distance
-//       applicable: ApplicableTo }
-
 type Player =
     | Player1
     | Player2
+
+module Player =
+    let opposite (player: Player) =
+        match player with
+        | Player1 -> Player2
+        | Player2 -> Player1
 
 type ActionName = string
 
 type Action =
     { name: ActionName
+      kind: ActionType
       distance: Distance
+      // TODO: into union, define fn in own module
       applicableTo: ApplicableTo
-      perform: ActionPerformer }
+       }
 
-and ApplicableAction =
-    { name: ActionName
+and SelectableAction =
+    { action: Action
       applicableCharacters: list<CharacterId>
-      perform: ActionPerformer }
+       }
 
 and ApplicableTo = Player -> Character -> bool
 
-and ActionPerformer =
+and ActionType =
     | Attack
     | Heal
     // | Defend
     | End
 
 and Actions = List<Action>
-and ApplicableActions = List<ApplicableAction>
+and ApplicableActions = List<SelectableAction>
 
 and CharacterId = System.Guid
 and CharacterStats =
@@ -108,6 +95,17 @@ and Character =
       movement: Movement }
 
 and Characters = Map<CharacterId, Character>
+
+module Action =
+    let attack (action: Action) (thisCharacter: Character) (otherCharacter): Character =
+        otherCharacter
+
+
+
+    let performAction (action: Action) (thisCharacter: Character) (otherCharacter): Character =
+
+
+        otherCharacter
 
 
 type Occupied = Option<CharacterId>
@@ -176,8 +174,6 @@ type GameDetails =
       player2Characters: Characters
       board: Board }
 
-
-
 module GameDetails =
     let board (d: GameDetails) = d.board
 
@@ -192,6 +188,28 @@ module GameDetails =
         |> function
             | Some c -> (c, Player1)
             | None -> game.player2Characters |> Map.find cid |> fun c -> (c, Player2)
+
+    let updateCharacter (c: Character) (p: Player) (d: GameDetails): GameDetails =
+        d.player1Characters
+        |> Map.containsKey c.id
+        |> function
+            | true ->
+                let p1c = d.player1Characters |> Map.change c.id (fun old ->
+                    match old with
+                    | Some _ -> Some c
+                    | None -> None
+                    )
+                { d with player1Characters = p1c }
+            | false ->
+                let p2c = d.player2Characters |> Map.change c.id (fun old ->
+                    match old with
+                    | Some _ -> Some c
+                    | None -> None
+                    )
+                { d with player2Characters = p2c }
+
+
+
 
 type Start = { rows: int; cols: int }
 
@@ -221,7 +239,7 @@ type PlayerAction =
       awaitingTurns: Characters
       character: Character
       availableActions: ApplicableActions
-      action: ApplicableAction }
+      action: Action }
 
 // TODO: merge game details + state
 // details top level record prop with union state
