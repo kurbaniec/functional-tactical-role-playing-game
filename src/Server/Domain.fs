@@ -98,6 +98,7 @@ and Characters = Map<CharacterId, Character>
 
 
 type Occupied = Option<CharacterId>
+module Occupied = Option
 
 type Tile =
     | Land of Occupied

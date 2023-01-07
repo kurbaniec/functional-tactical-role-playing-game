@@ -46,21 +46,17 @@ module PlayerMoveState =
 
         (msg, state)
 
-    let moveCharacter (pos: CellPosition) (state: PlayerMove) : GameStateUpdate =
+    let moveCharacter (p: Player) (pos: CellPosition) (state: PlayerMove) : GameStateUpdate =
         if not <| List.contains pos state.availableMoves then
             ([], PlayerMoveState(state))
         else
             let newBoard =
                 state.details.board
                 |> Board.moveCharacter state.character.id pos
-            let msg = [ CharacterUpdate(state.character.id) ]
+
             let details = { state.details with board = newBoard }
 
-            // TODO: filter for actions that can be executed
-            // distance check characters
-
-
-
+            // Filter for actions that can be executed
             let predicate (action: ApplicableTo) (t: Tile) =
                 t
                 |> Tile.characterId
@@ -71,7 +67,7 @@ module PlayerMoveState =
                    )
                 |> Option.defaultValue false
 
-            let availableAction =
+            let availableActions =
                 state.character.actions
                 |> List.filter (fun a ->
                     let predicate = predicate a.applicableTo
@@ -79,16 +75,18 @@ module PlayerMoveState =
                     |> Board.containsCharacters pos a.distance predicate
                 )
 
-
-
+            let msg = [
+                CharacterUpdate(state.character.id)
+                // Send action state select message
+                PlayerActionSelection (p, availableActions)
+            ]
 
             let state =
                 PlayerActionSelectState
                     { details = details
                       awaitingTurns = state.awaitingTurns
                       character = state.character
-                      availableActions = state.character.actions }
-            // TODO: send action state select message
+                      availableActions = availableActions }
 
             (msg, state)
 
@@ -96,7 +94,7 @@ module PlayerMoveState =
     let update (msg: GameMessage) (state: PlayerMove) : GameStateUpdate =
         match msg with
         | DeselectCharacter (p) -> deselectCharacter p state
-        | MoveCharacter (_, pos) -> moveCharacter pos state
+        | MoveCharacter (p, pos) -> moveCharacter p pos state
         | _ -> ([], PlayerMoveState(state))
 
 module PlayerActionSelectState =
@@ -105,9 +103,13 @@ module PlayerActionSelectState =
         match action with
         | None -> ([], PlayerActionSelectState(state))
         | Some action ->
-
             // TODO msg
             let msg = []
+            // TODO perform action
+
+            // TODO perform updates
+
+            // TODO check win
             let state =
                 PlayerActionState
                     { details = state.details
