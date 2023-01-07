@@ -56,8 +56,9 @@ let findTile (pos: CellPosition) (b: Board) : Tile =
     let (row, col) = pos
     b |> Map.find row |> Map.find col
 
-let private updateTile (tile: Tile) (pos: CellPosition) (b: Board): Board =
+let private updateTile (tile: Tile) (pos: CellPosition) (b: Board) : Board =
     let (row, col) = pos
+
     b
     |> Map.change row (fun colMap ->
         match colMap with
@@ -75,9 +76,7 @@ let moveCharacter (cid: CharacterId) (target: CellPosition) (board: Board) : Boa
     let from = findCharacter cid board
     let fromTile = findTile from board |> Tile.leave
     let targetTile = findTile target board |> Tile.occupy cid
-    board
-    |> updateTile fromTile from
-    |> updateTile targetTile target
+    board |> updateTile fromTile from |> updateTile targetTile target
 
 let findNeighbors (pos: CellPosition) (b: Board) : list<CellPosition * Tile> =
     // let row, col = pos
@@ -97,6 +96,10 @@ type Frontier = list<CellPosition>
 type FoundTile = { tile: Tile; distance: int }
 type FoundTiles = Map<CellPosition, FoundTile>
 type Neighbors = list<CellPosition * Tile>
+
+module FoundTiles =
+    let tiles (ft: FoundTiles) : list<Tile> =
+        ft |> Map.values :> seq<_> |> Seq.toList |> List.map (fun t -> t.tile)
 
 // Adapted from on https://www.redblobgames.com/pathfinding/tower-defense/
 let rec inspectNeighbors
@@ -152,7 +155,8 @@ let pathfinding
     (maxDistance: int)
     (predicate: Tile -> bool)
     (extract: (FoundTiles) -> 'U)
-    (b: Board)
+    (b: Board):
+    'U
     =
     let frontier = [ start ]
     let startTile = findTile start b
@@ -177,17 +181,13 @@ let availablePlayerMoves (d: Distance) (c: CharacterId) (b: Board) : list<CellPo
 
     pathfinding startPos d predicate extract b
 
-let containsCharacters
+let find
     (startPos: CellPosition)
     (d: Distance)
     (predicate: Tile -> bool)
+    (extract: FoundTiles -> 'U)
     (b: Board)
-    : bool
-    =
+    : 'U =
     let d = d |> Distance.value
-    let extract (found: FoundTiles) : bool =
-        Map.count found
-        |> fun count -> count > 0
 
     pathfinding startPos d predicate extract b
-

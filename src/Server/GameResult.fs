@@ -47,7 +47,7 @@ let intoPlayerDto (player: Player) : PlayerDto =
 let intoCharacterDto (c: Character) (b: Option<Board>) (p: Option<Player>) : CharacterDto =
     let id = c.id.ToString()
     let name = c.name
-    let cls = intoClsDto c.classification
+    let cls = intoClsDto c.stats.cls
     let properties = System.Collections.Generic.Dictionary<string, System.Object>()
     // TODO properties
     properties.Add("attack", 2)
@@ -98,7 +98,7 @@ let intoPlayerMoveSelectionDto
 
 // TODO: Move somewhere else
 // See: https://stackoverflow.com/a/3974842
-let join (p:Map<'a,'b>) (q:Map<'a,'b>) =
+let join (p: Map<'a, 'b>) (q: Map<'a, 'b>) =
     Map.fold (fun acc key value -> Map.add key value acc) p q
 
 let intoCharacterUpdateDto (cid: CharacterId) (game: GameDetails) =
@@ -106,6 +106,7 @@ let intoCharacterUpdateDto (cid: CharacterId) (game: GameDetails) =
         join game.player1Characters game.player2Characters
         |> Map.find cid
         |> fun c -> intoCharacterDto c (Some game.board) None
+
     CharacterUpdateResult { character = character }
 
 let intoDto (gameResult: GameResult) (game: GameDetails) =

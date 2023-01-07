@@ -1,5 +1,7 @@
 ﻿module GameState
 
+
+
 type GameStateUpdate = List<GameResult> * GameState
 
 module PlayerOverseeState =
@@ -50,9 +52,7 @@ module PlayerMoveState =
         if not <| List.contains pos state.availableMoves then
             ([], PlayerMoveState(state))
         else
-            let newBoard =
-                state.details.board
-                |> Board.moveCharacter state.character.id pos
+            let newBoard = state.details.board |> Board.moveCharacter state.character.id pos
 
             let details = { state.details with board = newBoard }
 
@@ -60,26 +60,29 @@ module PlayerMoveState =
             let predicate (action: ApplicableTo) (t: Tile) =
                 t
                 |> Tile.characterId
-                |> Option.map (fun cid ->
-                    details
-                    |> GameDetails.fromCharacterId cid
-                    |> fun (p, c) -> action c p
-                   )
+                |> Option.map (fun cid -> details |> GameDetails.fromCharacterId cid |> fun (p, c) -> action c p)
                 |> Option.defaultValue false
+
+            let extract (foundTiles: Board.FoundTiles) =
+                foundTiles
+                |> Board.FoundTiles.tiles
+                |> List.map Tile.characterId
+                |> List.choose id
 
             let availableActions =
                 state.character.actions
-                |> List.filter (fun a ->
+                |> List.map (fun a ->
                     let predicate = predicate a.applicableTo
-                    newBoard
-                    |> Board.containsCharacters pos a.distance predicate
-                )
+                    let applicableCharacters = newBoard |> Board.find pos a.distance predicate extract
 
-            let msg = [
-                CharacterUpdate(state.character.id)
-                // Send action state select message
-                PlayerActionSelection (p, availableActions)
-            ]
+                    { name = a.name
+                      applicableCharacters = applicableCharacters
+                      perform = a.perform })
+
+            let msg =
+                [ CharacterUpdate(state.character.id)
+                  // Send action state select message
+                  PlayerActionSelection(p, availableActions) ]
 
             let state =
                 PlayerActionSelectState
@@ -100,6 +103,7 @@ module PlayerMoveState =
 module PlayerActionSelectState =
     let selectAction (p: Player) (an: ActionName) (state: PlayerActionSelect) =
         let action = state.availableActions |> List.tryFind (fun a -> a.name = an)
+
         match action with
         | None -> ([], PlayerActionSelectState(state))
         | Some action ->
@@ -114,15 +118,27 @@ module PlayerActionSelectState =
                 PlayerActionState
                     { details = state.details
                       awaitingTurns = state.awaitingTurns
-                      action = action
-                       }
+                      character = state.character
+                      availableActions = state.availableActions
+                      action = action }
 
             (msg, state)
 
+    let deselectAction (p: Player) (state: PlayerActionSelect) =
+        let msg =
+                [ PlayerActionSelection(p, state.availableActions) ]
 
+        let state =
+            PlayerActionSelectState
+                { details = state.details
+                  awaitingTurns = state.awaitingTurns
+                  character = state.character
+                  availableActions = state.availableActions }
 
+        (msg, state)
 
     let update (msg: GameMessage) (state: PlayerActionSelect) : GameStateUpdate =
         match msg with
-        | SelectAction(p, a) -> selectAction p a state
-        | _ -> ([], PlayerActionSelectState (state))
+        | SelectAction (p, a) -> selectAction p a state
+        | DeselectAction p -> deselectAction p state
+        | _ -> ([], PlayerActionSelectState(state))

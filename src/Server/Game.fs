@@ -34,7 +34,11 @@ let newGame (_: unit) : List<GameResult> * Game =
     let character: Character =
         { id = cid
           name = name
-          classification = cls
+          stats = {
+              hp = 10
+              def = 10
+              cls = cls
+          }
           actions = actions
           movement = movement }
 

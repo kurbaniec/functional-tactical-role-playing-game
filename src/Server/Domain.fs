@@ -73,24 +73,37 @@ type Action =
     { name: ActionName
       distance: Distance
       applicableTo: ApplicableTo
-      perform: ActionPerformer
-    }
+      perform: ActionPerformer }
+
+and ApplicableAction =
+    { name: ActionName
+      applicableCharacters: list<CharacterId>
+      perform: ActionPerformer }
 
 and ApplicableTo = Player -> Character -> bool
+
 and ActionPerformer =
     | Attack
     | Heal
-    | Defend
+    // | Defend
     | End
 
 and Actions = List<Action>
+and ApplicableActions = List<ApplicableAction>
 
 and CharacterId = System.Guid
+and CharacterStats =
+    {
+        hp: int
+        def: int
+        cls: CharacterClass
+    }
 
 and Character =
     { id: CharacterId
       name: string
-      classification: CharacterClass
+      // classification: CharacterClass
+      stats: CharacterStats
       actions: Actions
       movement: Movement }
 
@@ -110,15 +123,14 @@ module Tile =
         | Land cid -> cid
         | Water cid -> cid
 
-    let isOccupied (tile: Tile): bool =
-        tile |> characterId |> Option.isSome
+    let isOccupied (tile: Tile) : bool = tile |> characterId |> Option.isSome
 
-    let occupy (cid: CharacterId) (tile: Tile): Tile =
+    let occupy (cid: CharacterId) (tile: Tile) : Tile =
         match tile with
         | Land _ -> Tile.Land <| Some cid
         | Water _ -> Tile.Water <| Some cid
 
-    let leave (tile: Tile): Tile =
+    let leave (tile: Tile) : Tile =
         match tile with
         | Land _ -> Tile.Land None
         | Water _ -> Tile.Water None
@@ -174,15 +186,12 @@ module GameDetails =
         | Player1 -> d.player1Characters
         | Player2 -> d.player2Characters
 
-    let fromCharacterId (cid: CharacterId) (game: GameDetails): Character*Player =
+    let fromCharacterId (cid: CharacterId) (game: GameDetails) : Character * Player =
         game.player1Characters
         |> Map.tryFind cid
         |> function
             | Some c -> (c, Player1)
-            | None ->
-                game.player2Characters
-                |> Map.find cid
-                |> fun c -> (c, Player2)
+            | None -> game.player2Characters |> Map.find cid |> fun c -> (c, Player2)
 
 type Start = { rows: int; cols: int }
 
@@ -199,22 +208,20 @@ type PlayerMove =
     { details: GameDetails
       awaitingTurns: Characters
       character: Character
-      availableMoves: list<CellPosition>
-       }
+      availableMoves: list<CellPosition> }
 
 type PlayerActionSelect =
     { details: GameDetails
       awaitingTurns: Characters
       character: Character
-      availableActions: Actions
-    }
+      availableActions: ApplicableActions }
 
 type PlayerAction =
-    {
-        details: GameDetails
-        awaitingTurns: Characters
-        action: Action
-    }
+    { details: GameDetails
+      awaitingTurns: Characters
+      character: Character
+      availableActions: ApplicableActions
+      action: ApplicableAction }
 
 // TODO: merge game details + state
 // details top level record prop with union state
@@ -255,7 +262,7 @@ type GameResult =
     | PlayerOversee of Player
     | PlayerMoveSelection of Player * CharacterId * list<CellPosition>
     | CharacterUpdate of CharacterId
-    | PlayerActionSelection of Player * Actions
+    | PlayerActionSelection of Player * ApplicableActions
 
 
 module GameResult =
@@ -269,4 +276,4 @@ module GameResult =
         | PlayerOversee _ -> AllRecipients
         | PlayerMoveSelection (p, _, _) -> PlayerRecipient p
         | CharacterUpdate _ -> AllRecipients
-        | PlayerActionSelection(p, _) -> PlayerRecipient p
+        | PlayerActionSelection (p, _) -> PlayerRecipient p
