@@ -163,7 +163,7 @@ let pathfinding
 let availablePlayerMoves (d: Distance) (c: CharacterId) (b: Board) : list<CellPosition> =
     let startPos = findCharacter c b
     let d = Distance.value d
-    // TODO
+    // TODO pass predicate with proper predicate
     let predicate (tile: Tile) : bool = true
     // See: https://devonburriss.me/converting-fsharp-csharp/
     // let extract (found: FoundTiles): list<CellPosition> =
@@ -176,3 +176,18 @@ let availablePlayerMoves (d: Distance) (c: CharacterId) (b: Board) : list<CellPo
         found |> Map.keys :> seq<_> |> Seq.toList
 
     pathfinding startPos d predicate extract b
+
+let containsCharacters
+    (startPos: CellPosition)
+    (d: Distance)
+    (predicate: Tile -> bool)
+    (b: Board)
+    : bool
+    =
+    let d = d |> Distance.value
+    let extract (found: FoundTiles) : bool =
+        Map.count found
+        |> fun count -> count > 0
+
+    pathfinding startPos d predicate extract b
+

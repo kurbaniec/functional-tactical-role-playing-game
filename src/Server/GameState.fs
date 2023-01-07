@@ -50,12 +50,38 @@ module PlayerMoveState =
         if not <| List.contains pos state.availableMoves then
             ([], PlayerMoveState(state))
         else
-            let newBoard = state.details.board |> Board.moveCharacter state.character.id pos
+            let newBoard =
+                state.details.board
+                |> Board.moveCharacter state.character.id pos
             let msg = [ CharacterUpdate(state.character.id) ]
             let details = { state.details with board = newBoard }
 
             // TODO: filter for actions that can be executed
             // distance check characters
+
+
+
+            let predicate (action: ApplicableTo) (t: Tile) =
+                t
+                |> Tile.characterId
+                |> Option.map (fun cid ->
+                    details
+                    |> GameDetails.fromCharacterId cid
+                    |> fun (p, c) -> action c p
+                   )
+                |> Option.defaultValue false
+
+            let availableAction =
+                state.character.actions
+                |> List.filter (fun a ->
+                    let predicate = predicate a.applicableTo
+                    newBoard
+                    |> Board.containsCharacters pos a.distance predicate
+                )
+
+
+
+
             let state =
                 PlayerActionSelectState
                     { details = details

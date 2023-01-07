@@ -158,9 +158,12 @@ type Board = Map<Row, Map<Col, Tile>>
 
 type GameDetails =
     { turnOf: Player
+      // TODO: change to characters: Map<Player, Map<cid, Character>
       player1Characters: Characters
       player2Characters: Characters
       board: Board }
+
+
 
 module GameDetails =
     let board (d: GameDetails) = d.board
@@ -169,6 +172,16 @@ module GameDetails =
         match p with
         | Player1 -> d.player1Characters
         | Player2 -> d.player2Characters
+
+    let fromCharacterId (cid: CharacterId) (game: GameDetails): Character*Player =
+        game.player1Characters
+        |> Map.tryFind cid
+        |> function
+            | Some c -> (c, Player1)
+            | None ->
+                game.player2Characters
+                |> Map.find cid
+                |> fun c -> (c, Player2)
 
 type Start = { rows: int; cols: int }
 
