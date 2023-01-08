@@ -240,6 +240,25 @@ class GameUI {
         }
     }
 
+    /** @param {DomainDto_PlayerActionResult} result **/
+    onPlayerActionResult(result) {
+        this.selection.clear()
+        this.gameState.update = (input) => {
+            if (input === Input.Enter) {
+                const c = this.findCharacter(this.cursor.positionDto)
+                if (!c) return;
+                updateServer(new DomainDto_IMessage(
+                    5, [c.id]
+                ), this.gameInfo)
+
+            } if (input === Input.Escape) {
+                updateServer(new DomainDto_IMessage(4), this.gameInfo)
+            }  else {
+                this.cursor.moveCursor(input)
+                this.showCharacterInfo(this.cursor.positionDto)
+            }
+        }
+    }
 
 
     /** @param {DomainDto_CharacterUpdateResult} result */
@@ -268,6 +287,8 @@ class GameUI {
             this.onCharacterUpdate(result)
         } else if (name === "PlayerActionSelectionResult") {
             this.onPlayerActionSelectionResult(result)
+        } else if (name === "PlayerActionResult") {
+            this.onPlayerActionResult(result)
         }
         else {
             console.error(`Unknown Result: ${name}`, result)

@@ -119,6 +119,8 @@ let intoCharacterUpdateDto (cid: CharacterId) (game: GameDetails) =
 let intoPlayerActionSelectionDto (p: Player) (actions: ApplicableActions) =
     PlayerActionSelectionResult { availableActions = actions |> List.map (fun a -> a.action.name) |> ResizeArray }
 
+let intoPlayerActionDto (player: Player) (cids: list<CharacterId>) =
+    PlayerActionResult { selectableCharacters = cids |> List.map (fun cid -> cid.ToString()) |> ResizeArray }
 
 
 let intoDto (gameResult: GameResult) (game: GameDetails) =
@@ -129,6 +131,7 @@ let intoDto (gameResult: GameResult) (game: GameDetails) =
         | PlayerMoveSelection (p, c, m) -> intoPlayerMoveSelectionDto p c m game
         | CharacterUpdate cid -> intoCharacterUpdateDto cid game
         | PlayerActionSelection (p, a) -> intoPlayerActionSelectionDto p a
+        | PlayerAction (p, cids) -> intoPlayerActionDto p cids
         | _ -> failwith "intoDto"
 
     res

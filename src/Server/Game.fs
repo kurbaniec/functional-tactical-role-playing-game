@@ -73,5 +73,6 @@ let update (player: Player) (msg: GameMessage) (game: Game) : List<GameResult> *
         | PlayerOverseeState s -> PlayerOverseeState.update msg s
         | PlayerMoveState s -> PlayerMoveState.update msg s
         | PlayerActionSelectState s -> PlayerActionSelectState.update msg s
+        | PlayerActionState s -> PlayerActionState.update msg s
         | _ -> failwith "update"
         |> fun (r, s) -> (r, { game with state = s })

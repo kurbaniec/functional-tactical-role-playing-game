@@ -110,6 +110,8 @@ module PlayerActionSelectState =
         | None -> ([], PlayerActionSelectState(state))
         | Some selectableAction ->
 
+            // TODO: Send preview info when action is applied
+            // E.g. after attack enemy has xyz hp
             let msg = [ PlayerAction (p, selectableAction.applicableCharacters) ]
 
             let state =

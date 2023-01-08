@@ -70,6 +70,7 @@ module DomainDto =
         | MoveCharacterDto of PositionDto
         | SelectActionDto of string
         | DeselectActionDto
+        | PerformActionDto of string
 
     type StartResult =
         { id: string
@@ -97,12 +98,18 @@ module DomainDto =
         availableActions: ResizeArray<SelectableActionDto>
     }
 
+    type PlayerActionResult = {
+        // TODO: alias for string characterIdDto
+        selectableCharacters: ResizeArray<string>
+    }
+
     type IResult =
         | StartResult of StartResult
         | PlayerOverseeResult of PlayerOverseeResult
         | PlayerMoveSelectionResult of PlayerMoveSelectionResult
         | CharacterUpdateResult of CharacterUpdateResult
         | PlayerActionSelectionResult of PlayerActionSelectionResult
+        | PlayerActionResult of PlayerActionResult
 
 
 

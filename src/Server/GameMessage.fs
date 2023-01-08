@@ -26,6 +26,9 @@ let fromSelectActionDto (p: Player) (actionName: string): GameMessage =
 let fromDeselectActionDto (p: Player): GameMessage =
     DeselectAction (p)
 
+let fromPerformActionDto (p: Player) (cid: string): GameMessage =
+    PerformAction (p, cid |> System.Guid.Parse)
+
 let fromDto (p: Player) (msg: IMessage): GameMessage =
     match msg with
     | SelectCharacterDto c -> fromSelectCharacterDto p c
@@ -33,5 +36,6 @@ let fromDto (p: Player) (msg: IMessage): GameMessage =
     | MoveCharacterDto pos -> fromMoveCharacterDto p pos
     | SelectActionDto an -> fromSelectActionDto p an
     | DeselectActionDto -> fromDeselectActionDto p
+    | PerformActionDto cid -> fromPerformActionDto p cid
     | _ -> failwith "fromDto"
 
