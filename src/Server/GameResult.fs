@@ -120,6 +120,7 @@ let intoPlayerActionSelectionDto (p: Player) (actions: ApplicableActions) =
     PlayerActionSelectionResult { availableActions = actions |> List.map (fun a -> a.action.name) |> ResizeArray }
 
 
+
 let intoDto (gameResult: GameResult) (game: GameDetails) =
     let res: IResult =
         match gameResult with

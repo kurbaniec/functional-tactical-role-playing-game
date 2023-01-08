@@ -62,6 +62,7 @@ type Action =
       applicableTo: ApplicableTo
        }
 
+// TODO: better name?
 and SelectableAction =
     { action: Action
       applicableCharacters: list<CharacterId>
@@ -239,7 +240,7 @@ type PlayerAction =
       awaitingTurns: Characters
       character: Character
       availableActions: ApplicableActions
-      action: Action }
+      action: SelectableAction }
 
 // TODO: merge game details + state
 // details top level record prop with union state
@@ -272,6 +273,7 @@ type GameMessage =
     | MoveCharacter of Player * CellPosition
     | SelectAction of Player * ActionName
     | DeselectAction of Player
+    | PerformAction of Player * CharacterId
 
 // TODO: Make tuples?
 // See: https://github.com/fsharp/fslang-suggestions/issues/743
@@ -281,6 +283,7 @@ type GameResult =
     | PlayerMoveSelection of Player * CharacterId * list<CellPosition>
     | CharacterUpdate of CharacterId
     | PlayerActionSelection of Player * ApplicableActions
+    | PlayerAction of Player * list<CharacterId>
 
 
 module GameResult =
@@ -295,3 +298,4 @@ module GameResult =
         | PlayerMoveSelection (p, _, _) -> PlayerRecipient p
         | CharacterUpdate _ -> AllRecipients
         | PlayerActionSelection (p, _) -> PlayerRecipient p
+        | PlayerAction (p, _) -> PlayerRecipient p

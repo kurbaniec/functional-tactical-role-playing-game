@@ -102,22 +102,60 @@ module PlayerMoveState =
 
 module PlayerActionSelectState =
     let selectAction (p: Player) (an: ActionName) (state: PlayerActionSelect) =
-        let action =
+        let selectableAction =
             state.availableActions
             |> List.tryFind (fun a -> a.action.name = an)
-            |> Option.map (fun a -> a.action)
 
-        match action with
+        match selectableAction with
         | None -> ([], PlayerActionSelectState(state))
-        | Some action ->
-            match action.kind with
+        | Some selectableAction ->
+
+            let msg = [ PlayerAction (p, selectableAction.applicableCharacters) ]
+
+            let state =
+                PlayerActionState
+                    { details = state.details
+                      awaitingTurns = state.awaitingTurns
+                      character = state.character
+                      availableActions = state.availableActions
+                      action = selectableAction }
+
+            (msg, state)
+
+    let update (msg: GameMessage) (state: PlayerActionSelect) : GameStateUpdate =
+        match msg with
+        | SelectAction (p, a) -> selectAction p a state
+
+        | _ -> ([], PlayerActionSelectState(state))
+
+module PlayerActionState =
+    let deselectAction (p: Player) (state: PlayerAction) =
+        let msg = [ PlayerActionSelection(p, state.availableActions) ]
+
+        let state =
+            PlayerActionSelectState
+                { details = state.details
+                  awaitingTurns = state.awaitingTurns
+                  character = state.character
+                  availableActions = state.availableActions }
+
+        (msg, state)
+
+    let rec performAction (player: Player) (cid: CharacterId) (state: PlayerAction) =
+        let selectableAction = state.action
+        let action = selectableAction.action
+        let actionType = action.kind
+
+        if not <| List.contains cid selectableAction.applicableCharacters then
+            ([], PlayerActionState(state))
+        else
+            match actionType with
             | End ->
-                // Dont require additional input
-                let awaitingTurns = state.awaitingTurns |> Map.remove state.character.id
+                let awaitingTurns = state.awaitingTurns |> Map.remove cid
 
                 // TODO: check if awaitingTurns is empty
 
-                let msg = [ PlayerOversee p ]
+                let msg = [ PlayerOversee player ]
 
                 let state =
                     PlayerOverseeState
@@ -141,24 +179,13 @@ module PlayerActionSelectState =
                           awaitingTurns = state.awaitingTurns
                           character = state.character
                           availableActions = state.availableActions
-                          action = action }
+                          action = selectableAction }
 
                 (msg, state)
 
-    let deselectAction (p: Player) (state: PlayerActionSelect) =
-        let msg = [ PlayerActionSelection(p, state.availableActions) ]
 
-        let state =
-            PlayerActionSelectState
-                { details = state.details
-                  awaitingTurns = state.awaitingTurns
-                  character = state.character
-                  availableActions = state.availableActions }
-
-        (msg, state)
-
-    let update (msg: GameMessage) (state: PlayerActionSelect) : GameStateUpdate =
+    let update (msg: GameMessage) (state: PlayerAction) : GameStateUpdate =
         match msg with
-        | SelectAction (p, a) -> selectAction p a state
         | DeselectAction p -> deselectAction p state
-        | _ -> ([], PlayerActionSelectState(state))
+        | PerformAction (p, cid) -> performAction p cid state
+        | _ -> ([], PlayerActionState(state))
