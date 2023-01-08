@@ -93,10 +93,11 @@ class Character {
 
     /** @param {DomainDto_CharacterDto} model **/
     updateModel(model) {
-        console.log("before update model", this.model)
+        // console.log("model", JSON.stringify(model))
+        // console.log("before update model", JSON.stringify(this.model))
         eachRecursive(this.model, model)
+        // console.log("after update model", JSON.stringify(this.model))
         setVec3FromPositionDto(this.mesh.position, this.model.position)
-        console.log("after update model", this.model)
     }
 
     get id() {

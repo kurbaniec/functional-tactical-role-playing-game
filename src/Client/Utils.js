@@ -55,15 +55,19 @@ export function setVec3FromPositionDto(vec3, pos) {
     vec3.z = -pos.col
 }
 
+// Needed because if (val) also returns `false` when val is not null/undefined but `0` or `false`
+function notNullOrUndefined(val) {
+    return val !== null && val !== undefined
+}
+
 // See: https://stackoverflow.com/a/2549333
 export function eachRecursive(thisModel, model) {
     for (let key in model) {
         if (typeof model[key] == "object" && model[key] !== null) {
-            if (thisModel[key] === null)
-                thisModel[key] = {}
+            if (!thisModel[key]) thisModel[key] = {}
             eachRecursive(thisModel[key], model[key])
         }
-        else if (model[key]) {
+        else if (notNullOrUndefined(model[key])) {
             thisModel[key] = model[key]
         }
     }
