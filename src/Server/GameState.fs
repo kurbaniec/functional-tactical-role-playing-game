@@ -49,40 +49,65 @@ module PlayerMoveState =
 
         (msg, state)
 
-    let moveCharacter (p: Player) (pos: CellPosition) (state: PlayerMove) : GameStateUpdate =
+    let moveCharacter (player: Player) (pos: CellPosition) (state: PlayerMove) : GameStateUpdate =
         if not <| List.contains pos state.availableMoves then
             ([], PlayerMoveState(state))
         else
-            let newBoard = state.details.board |> Board.moveCharacter state.character.id pos
-
+            let characterToMove = state.character
+            let newBoard = state.details.board |> Board.moveCharacter characterToMove.id pos
             let details = { state.details with board = newBoard }
 
-            // Filter for actions that can be executed
-            let predicate (action: ApplicableTo) (t: Tile) =
-                t
-                |> Tile.characterId
-                |> Option.map (fun cid -> details |> GameDetails.fromCharacterId cid |> fun (p, c) -> action c p)
-                |> Option.defaultValue false
+            // Look for all tiles in distance
+            let boardPredicate (t: Tile) = true
 
-            let extract (foundTiles: Board.FoundTiles) =
+            // Filter for actions that can be executed
+            let boardActionExtractor (actionPredicate: Action.ApplicableToPredicate) (foundTiles: Board.FoundTiles) =
                 foundTiles
                 |> Board.FoundTiles.tiles
-                |> List.map Tile.characterId
+                |> List.map (fun t -> t |> Tile.characterId)
                 |> List.choose id
+                |> List.map (fun cid -> details |> GameDetails.fromCharacterId cid)
+                |> List.filter (fun (c, p) -> actionPredicate p c)
+                |> List.map (fun (c, _) -> c |> Character.id)
+
+            // let boardActionPredicate (actionPredicate: Action.ApplicableToPredicate) (t: Tile) =
+            //     t
+            //     |> Tile.characterId
+            //     |> Option.map (fun cid ->
+            //         details |> GameDetails.fromCharacterId cid |> fun (p, c) -> actionPredicate c p)
+            //     |> Option.defaultValue false
+            //
+            // let extract (foundTiles: Board.FoundTiles) =
+            //     foundTiles
+            //     |> Board.FoundTiles.tiles
+            //     |> List.map Tile.characterId
+            //     |> List.choose id
 
             let availableActions =
                 state.character.actions
-                |> List.map (fun a ->
-                    let predicate = predicate a.applicableTo
-                    let applicableCharacters = newBoard |> Board.find pos a.distance predicate extract
+                |> List.map (fun action ->
+                    let predicate = boardPredicate
 
-                    { action = a
-                      applicableCharacters = applicableCharacters })
+                    let extract =
+                        boardActionExtractor (Action.createApplicableToPredicate action player characterToMove)
+
+                    let applicableCharacters =
+                        newBoard |> Board.find pos action.distance predicate extract
+
+                    if List.isEmpty applicableCharacters then
+                        None
+                    else
+                        Some
+                        <|
+
+                        { action = action
+                          selectableCharacters = applicableCharacters })
+                |> List.choose id
 
             let msg =
                 [ CharacterUpdate(state.character.id)
                   // Send action state select message
-                  PlayerActionSelection(p, availableActions) ]
+                  PlayerActionSelection(player, availableActions) ]
 
             let state =
                 PlayerActionSelectState
@@ -103,8 +128,7 @@ module PlayerMoveState =
 module PlayerActionSelectState =
     let selectAction (p: Player) (an: ActionName) (state: PlayerActionSelect) =
         let selectableAction =
-            state.availableActions
-            |> List.tryFind (fun a -> a.action.name = an)
+            state.availableActions |> List.tryFind (fun a -> a.action.name = an)
 
         match selectableAction with
         | None -> ([], PlayerActionSelectState(state))
@@ -112,7 +136,7 @@ module PlayerActionSelectState =
 
             // TODO: Send preview info when action is applied
             // E.g. after attack enemy has xyz hp
-            let msg = [ PlayerAction (p, selectableAction.applicableCharacters) ]
+            let msg = [ PlayerAction(p, selectableAction.selectableCharacters) ]
 
             let state =
                 PlayerActionState
@@ -148,7 +172,7 @@ module PlayerActionState =
         let action = selectableAction.action
         let actionType = action.kind
 
-        if not <| List.contains cid selectableAction.applicableCharacters then
+        if not <| List.contains cid selectableAction.selectableCharacters then
             ([], PlayerActionState(state))
         else
             match actionType with

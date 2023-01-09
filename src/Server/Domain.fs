@@ -10,23 +10,13 @@ type Distance = Distance of int
 module Distance =
     let value (Distance d) = d
 
+
 type MovementType =
     | Foot
     | Mount
     | Fly
 
-module MovementType =
-    let private footDistance: Lazy<Distance> = Lazy.Create(fun () -> Distance 2)
-    let private mountDistance: Lazy<Distance> = Lazy.Create(fun () -> Distance 3)
-    let private flyDistance: Lazy<Distance> = Lazy.Create(fun () -> Distance 3)
-
-    let distance (m: MovementType) =
-        match m with
-        | Foot -> footDistance.Value
-        | Mount -> mountDistance.Value
-        | Fly -> flyDistance.Value
-
-type Movement = { t: MovementType; distance: Distance }
+type Movement = { kind: MovementType; distance: Distance }
 
 type CharacterClass =
     | Axe
@@ -34,11 +24,7 @@ type CharacterClass =
     | Lance
     | Bow
     | Support
-// type ActionValue = Damage of int|Heal of int
-// let value (v: ActionValue) =
-//     match v with
-//     | Damage d -> d
-//     | Heal h -> h
+
 type ActionValue = ActionValue of int
 let value (ActionValue v) = v
 
@@ -58,22 +44,17 @@ type Action =
     { name: ActionName
       kind: ActionType
       distance: Distance
-      // TODO: into union, define fn in own module
-      applicableTo: ApplicableTo
        }
 
 // TODO: better name?
 and SelectableAction =
     { action: Action
-      applicableCharacters: list<CharacterId>
+      selectableCharacters: list<CharacterId>
        }
-
-and ApplicableTo = Player -> Character -> bool
 
 and ActionType =
     | Attack
     | Heal
-    // | Defend
     | End
 
 and Actions = List<Action>
@@ -90,23 +71,14 @@ and CharacterStats =
 and Character =
     { id: CharacterId
       name: string
-      // classification: CharacterClass
       stats: CharacterStats
       actions: Actions
       movement: Movement }
 
 and Characters = Map<CharacterId, Character>
 
-module Action =
-    let attack (action: Action) (thisCharacter: Character) (otherCharacter): Character =
-        otherCharacter
-
-
-
-    let performAction (action: Action) (thisCharacter: Character) (otherCharacter): Character =
-
-
-        otherCharacter
+module Character =
+    let id (character: Character) = character.id
 
 
 type Occupied = Option<CharacterId>

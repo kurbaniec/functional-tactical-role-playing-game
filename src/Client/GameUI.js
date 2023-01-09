@@ -243,6 +243,7 @@ class GameUI {
     /** @param {DomainDto_PlayerActionResult} result **/
     onPlayerActionResult(result) {
         this.selection.clear()
+        this.highlightCharacters(result.selectableCharacters)
         this.gameState.update = (input) => {
             if (input === Input.Enter) {
                 const c = this.findCharacter(this.cursor.positionDto)
@@ -333,6 +334,18 @@ class GameUI {
         }
     }
 
+    /**
+     * @param {Array<string>} cids
+     */
+    highlightCharacters(cids) {
+        const positions = []
+        for (const cid of cids) {
+            const character = this.characters.get(cid)
+            if (!character) return
+            positions.push(character.positionDto)
+        }
+        this.highlightPositions(positions)
+    }
 
 
     removeHighlight() {

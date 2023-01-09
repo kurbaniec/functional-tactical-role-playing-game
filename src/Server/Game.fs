@@ -14,21 +14,16 @@ let newGame (_: unit) : List<GameResult> * Game =
     let endTurn =
         { name = "End"
           distance = Distance 0
-          applicableTo = fun p c -> c.id = cid
           kind = End }
-
-
-    let applicableTo p c = p = Player2
 
     let actions =
         [ { name = "Attack"
             distance = Distance 1
-            applicableTo = applicableTo
             kind = Attack }
           endTurn ]
 
     let movement =
-        { t = MovementType.Foot
+        { kind = MovementType.Foot
           distance = Distance 2 }
 
     let character: Character =

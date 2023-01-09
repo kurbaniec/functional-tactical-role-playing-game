@@ -7,6 +7,8 @@
   <ItemGroup>
     <None Include="paket.references" />
     <Compile Include="Domain.fs" />
+    <Compile Include="Movement.fs" />
+    <Compile Include="Action.fs" />
     <Compile Include="Board.fs" />
     <Compile Include="GameState.fs" />
     <Compile Include="Game.fs" />
