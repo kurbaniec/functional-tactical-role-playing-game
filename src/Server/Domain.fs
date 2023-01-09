@@ -65,6 +65,8 @@ and CharacterStats =
     {
         hp: int
         def: int
+        atk: int
+        heal: int
         cls: CharacterClass
     }
 
@@ -79,6 +81,21 @@ and Characters = Map<CharacterId, Character>
 
 module Character =
     let id (character: Character) = character.id
+
+    let def (character: Character) = character.stats.def
+    let hp (character: Character) = character.stats.hp
+    let atk (character: Character) = character.stats.atk
+    let heal (character: Character) = character.stats.heal
+
+    let updateHp (amount: int) (character: Character): Character =
+        character
+        |> hp
+        |> (+) amount
+        |> fun hp -> System.Math.Clamp(hp, 0, System.Int32.MaxValue)
+        |> fun hp -> { character.stats with hp = hp }
+        |> fun stats -> { character with stats = stats }
+
+
 
 
 type Occupied = Option<CharacterId>

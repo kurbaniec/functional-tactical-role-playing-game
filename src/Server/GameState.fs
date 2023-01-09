@@ -91,17 +91,17 @@ module PlayerMoveState =
                     let extract =
                         boardActionExtractor (Action.createApplicableToPredicate action player characterToMove)
 
-                    let applicableCharacters =
-                        newBoard |> Board.find pos action.distance predicate extract
-
-                    if List.isEmpty applicableCharacters then
-                        None
-                    else
-                        Some
-                        <|
-
-                        { action = action
-                          selectableCharacters = applicableCharacters })
+                    newBoard
+                    |> Board.find pos action.distance predicate extract
+                    |> fun cids ->
+                        cids
+                        |> List.isEmpty
+                        |> function
+                            | true -> None
+                            | false ->
+                                Some
+                                <| { action = action
+                                     selectableCharacters = cids })
                 |> List.choose id
 
             let msg =

@@ -32,6 +32,8 @@ let newGame (_: unit) : List<GameResult> * Game =
           stats = {
               hp = 10
               def = 10
+              atk = 5
+              heal = 0
               cls = cls
           }
           actions = actions
