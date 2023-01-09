@@ -52,7 +52,10 @@ let intoCharacterDto (c: Character) (b: Option<Board>) (p: Option<Player>) : Cha
     let cls = intoClsDto c.stats.cls
     let properties = System.Collections.Generic.Dictionary<string, System.Object>()
     // TODO properties
-    properties.Add("attack", 2)
+    properties.Add("Attack", c |> Character.atk)
+    properties.Add("HP", c |> Character.hp)
+    properties.Add("DEF", c |> Character.def)
+    c |> Character.heal |> fun heal -> if heal > 0 then properties.Add("HEAL", heal)
 
     let position =
         match b with
@@ -74,11 +77,24 @@ let intoCharacterDto (c: Character) (b: Option<Board>) (p: Option<Player>) : Cha
 let intoStartDto (gid: GameId) (game: GameDetails) =
     let boardDto = intoBoardDto game.board
 
-    let characters =
-        Map.join game.player1Characters game.player2Characters
+    // let characters =
+    //     Map.join game.player1Characters game.player2Characters
+    //     |> Map.values
+    //     |> ResizeArray
+    //     |> ResizeArray.map (fun c -> intoCharacterDto c <| Some game.board <| Some Player1)
+    // TODO refactor this
+    let characters1 =
+        game.player1Characters
         |> Map.values
         |> ResizeArray
         |> ResizeArray.map (fun c -> intoCharacterDto c <| Some game.board <| Some Player1)
+
+    let characters2 =
+        game.player2Characters
+        |> Map.values
+        |> ResizeArray
+        |> ResizeArray.map (fun c -> intoCharacterDto c <| Some game.board <| Some Player2)
+    let characters = characters1 |> ResizeArray.append characters2
 
     StartResult
         { id = gid.ToString()
@@ -108,13 +124,6 @@ let intoCharacterUpdateDto (cid: CharacterId) (game: GameDetails) =
         |> fun c -> intoCharacterDto c (Some game.board) None
 
     CharacterUpdateResult { character = character }
-
-// let intoActionSelectionDto (action: SelectableAction) : SelectableActionDto =
-// let applicableTo =
-//     action.applicableCharacters |> List.map (fun c -> c.ToString()) |> ResizeArray
-//
-// { name = action.action.name
-//   applicableTo = applicableTo }
 
 let intoPlayerActionSelectionDto (p: Player) (actions: ApplicableActions) =
     PlayerActionSelectionResult { availableActions = actions |> List.map (fun a -> a.action.name) |> ResizeArray }

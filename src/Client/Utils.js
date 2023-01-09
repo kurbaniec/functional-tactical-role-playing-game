@@ -56,18 +56,23 @@ export function setVec3FromPositionDto(vec3, pos) {
 }
 
 // Needed because if (val) also returns `false` when val is not null/undefined but `0` or `false`
-function notNullOrUndefined(val) {
-    return val !== null && val !== undefined
+function nullOrUndefined(val) {
+    return val === null || val === undefined
 }
 
 // See: https://stackoverflow.com/a/2549333
+// And: https://stackoverflow.com/a/32000937/12347616
 export function eachRecursive(thisModel, model) {
     for (let key in model) {
+        if (model[key] instanceof Map) {
+            if (nullOrUndefined(thisModel[key])) thisModel[key] = new Map()
+            thisModel[key] = new Map([...thisModel[key], ...model[key]])
+        }
         if (typeof model[key] == "object" && model[key] !== null) {
-            if (!thisModel[key]) thisModel[key] = {}
+            if (nullOrUndefined(thisModel[key])) thisModel[key] = {}
             eachRecursive(thisModel[key], model[key])
         }
-        else if (notNullOrUndefined(model[key])) {
+        else if (!nullOrUndefined(model[key])) {
             thisModel[key] = model[key]
         }
     }

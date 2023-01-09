@@ -107,7 +107,7 @@ module DomainDto =
         character: string
     }
 
-    type PlayerWin = {
+    type PlayerWinResult = {
         player: PlayerDto
     }
 
@@ -119,7 +119,7 @@ module DomainDto =
         | PlayerActionSelectionResult of PlayerActionSelectionResult
         | PlayerActionResult of PlayerActionResult
         | CharacterDefeatResult of CharacterDefeatResult
-        | PlayerWinResult of PlayerWin
+        | PlayerWinResult of PlayerWinResult
 
 
 

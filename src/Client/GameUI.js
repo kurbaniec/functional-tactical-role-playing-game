@@ -65,6 +65,8 @@ class Cursor {
     get positionDto() {
         return vec3ToPositionDto(this.mesh.position)
     }
+
+    dispose() { this.mesh.dispose() }
 }
 
 class Character {
@@ -111,6 +113,8 @@ class Character {
     get positionDto() {
         return vec3ToPositionDto(this.mesh.position)
     }
+
+    dispose() { this.mesh.dispose() }
 }
 
 class Selector {
@@ -218,8 +222,8 @@ class GameUI {
                 updateServer(new DomainDto_IMessage(1), this.gameInfo)
             } else {
                 this.cursor.moveCursor(input)
-                this.showCharacterInfo(this.cursor.positionDto)
             }
+            this.showCharacterInfo(this.cursor.positionDto)
         }
     }
 
@@ -235,7 +239,6 @@ class GameUI {
                 ), this.gameInfo)
             } else {
                 this.selection.moveCursor(input)
-                // this.showCharacterInfo(this.cursor.positionDto)
             }
         }
     }
@@ -256,8 +259,21 @@ class GameUI {
                 updateServer(new DomainDto_IMessage(4), this.gameInfo)
             }  else {
                 this.cursor.moveCursor(input)
-                this.showCharacterInfo(this.cursor.positionDto)
             }
+            this.showCharacterInfo(this.cursor.positionDto)
+        }
+    }
+
+    /** @param {DomainDto_PlayerWinResult} result **/
+    onPlayerWinResult(result) {
+        this.removeHighlight()
+        if (this.gameInfo.player === result.player) {
+            alert("You WIN")
+        } else {
+            alert("You LOSE")
+        }
+        this.gameState.update = (input) => {
+            console.log("Game already ended!")
         }
     }
 
@@ -268,6 +284,15 @@ class GameUI {
         const c = this.characters.get(result.character.id)
         console.log("c", c)
         if (c) c.updateModel(result.character)
+    }
+
+    /** @param {DomainDto_CharacterDefeatResult} result */
+    onCharacterDefeat(result) {
+        console.log("defeat", JSON.stringify(result))
+        const character = this.characters.get(result.character)
+        if (!character) return
+        character.dispose()
+        this.characters.delete(result.character)
     }
 
     /** @param {string} input **/
@@ -290,8 +315,11 @@ class GameUI {
             this.onPlayerActionSelectionResult(result)
         } else if (name === "PlayerActionResult") {
             this.onPlayerActionResult(result)
-        }
-        else {
+        } else if (name === "CharacterDefeatResult") {
+            this.onCharacterDefeat(result)
+        } else if (name === "PlayerWinResult") {
+            this.onPlayerWinResult(result)
+        } else {
             console.error(`Unknown Result: ${name}`, result)
         }
     }
@@ -514,8 +542,6 @@ class GameUI {
 
         console.log(startResult.constructor.name);
     }
-
-
 }
 
 export {GameUI};

@@ -272,12 +272,12 @@ module PlayerActionState =
             if details |> GameDetails.isDefeated oppositePlayer then
                 // Game End!
                 match player with
-                | Player1 -> ([ PlayerWin ], PlayerWinState details)
-                | Player2 -> ([ PlayerWin ], PlayerWinState details)
+                | Player1 -> (msg @ [ PlayerWin ], PlayerWinState details)
+                | Player2 -> (msg @ [ PlayerWin ], PlayerWinState details)
             else
                 // TODO: when awaiting turns is merge to GameDetails make if else
                 let awaitingTurns =
-                    state.awaitingTurns |> Map.remove (thisCharacter |> Character.id)
+                   state.awaitingTurns |> Map.remove (thisCharacter |> Character.id)
 
                 if awaitingTurns |> Map.isEmpty then
                     // Player turn switch
