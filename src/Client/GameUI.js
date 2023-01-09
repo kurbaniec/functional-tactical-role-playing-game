@@ -157,10 +157,10 @@ class Selector {
     moveCursor(input) {
         const lastIndex = this.index
         if (input === Input.Up) {
-            this.index = modulo((lastIndex + 1), this.length)
+            this.index = modulo((lastIndex - 1), this.length)
         }
         else if (input === Input.Down) {
-            this.index = modulo((lastIndex - 1), this.length)
+            this.index = modulo((lastIndex + 1), this.length)
         }
         this.removeHighlight(lastIndex)
         this.highlight(this.index)

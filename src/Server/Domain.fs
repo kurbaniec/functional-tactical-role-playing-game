@@ -64,6 +64,7 @@ and CharacterId = System.Guid
 and CharacterStats =
     {
         hp: int
+        maxHp: int
         def: int
         atk: int
         heal: int
@@ -85,6 +86,7 @@ module Character =
 
     let def (character: Character) = character.stats.def
     let hp (character: Character) = character.stats.hp
+    let maxHp (character: Character) = character.stats.maxHp
     let atk (character: Character) = character.stats.atk
     let heal (character: Character) = character.stats.heal
 
@@ -94,7 +96,7 @@ module Character =
         character
         |> hp
         |> (+) amount
-        |> fun hp -> System.Math.Clamp(hp, 0, System.Int32.MaxValue)
+        |> fun hp -> System.Math.Clamp(hp, 0, character |> maxHp)
         |> fun hp -> { character.stats with hp = hp }
         |> fun stats -> { character with stats = stats }
 

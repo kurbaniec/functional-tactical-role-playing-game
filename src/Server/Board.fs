@@ -3,14 +3,7 @@
 open System
 open System.Collections.Generic
 
-let create (row: Row) (col: Col) : Board =
-    let columns =
-        [ for i in 0 .. (Col.value col) -> (Col i, Tile.Land None) ]
-        |> List.mapi (fun i x -> if i = 1 || i = 5 then (Col i, Tile.Water None) else x)
-        |> Map.ofList
 
-    let board = [ for i in 0 .. (Row.value row) - 1 -> (Row i, columns) ] |> Map.ofList
-    board
 
 let placeCharacter (pos: CellPosition) (c: CharacterId) (board: Board) : Board =
     let (row, col) = pos
@@ -156,9 +149,8 @@ let pathfinding
     (maxDistance: int)
     (predicate: Tile -> bool)
     (extract: (FoundTiles) -> 'U)
-    (b: Board):
-    'U
-    =
+    (b: Board)
+    : 'U =
     let frontier = [ start ]
     let startTile = findTile start b
     let foundTiles = Map [ (start, { tile = startTile; distance = 0 }) ]
@@ -177,13 +169,28 @@ let availablePlayerMoves (character: Character) (board: Board) : list<CellPositi
 
     pathfinding startPos distance predicate extract board
 
-let find
-    (startPos: CellPosition)
-    (d: Distance)
-    (predicate: Tile -> bool)
-    (extract: FoundTiles -> 'U)
-    (b: Board)
-    : 'U =
+let find (startPos: CellPosition) (d: Distance) (predicate: Tile -> bool) (extract: FoundTiles -> 'U) (b: Board) : 'U =
     let d = d |> Distance.value
 
     pathfinding startPos d predicate extract b
+
+
+
+let create (row: Row) (col: Col) : Board =
+    // let columns =
+    //     [ for i in 0 .. (Col.value col) -> (Col i, Tile.Land None) ]
+    //     |> List.mapi (fun i x -> if i = 1 || i = 5 then (Col i, Tile.Water None) else x)
+    //     |> Map.ofList
+    let maxRow = row |> Row.value |> (+) -1
+    let maxCol = col |> Col.value |> (+) -1
+
+    let columns = [ for i in 0..maxCol -> (Col i, Tile.Land None) ] |> Map.ofList
+    let board = [ for i in 0..maxRow -> (Row i, columns) ] |> Map.ofList
+
+    // TODO: randomize?
+    let obstacles =
+        [ (Tile.Water None, (Row 0, Col <| maxCol / 2))
+          (Tile.Water None, (Row maxRow, Col <| maxCol / 2)) ]
+
+    (board, obstacles)
+    ||> List.fold (fun board (tile, pos) -> board |> updateTile tile pos)

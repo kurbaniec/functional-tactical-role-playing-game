@@ -23,14 +23,15 @@ let newGame (_: unit) : List<GameResult> * Game =
           endTurn ]
 
     let movement =
-        { kind = MovementType.Fly
+        { kind = MovementType.Foot
           distance = Distance 2 }
 
     let character: Character =
         { id = cid
           name = name
           stats =
-            { hp = 10
+            { hp = 1
+              maxHp = 10
               def = 10
               atk = 5
               heal = 0
@@ -38,16 +39,38 @@ let newGame (_: unit) : List<GameResult> * Game =
           actions = actions
           movement = movement }
 
+    let healerPos = (Row 3, Col 0)
+    let healerId = System.Guid.NewGuid()
+
+    let heal =
+        { name = "Heal"
+          distance = Distance 2
+          kind = Heal }
+
+    let healActions = heal :: actions
+    let healerStats = { character.stats with heal = 3 }
+
+    let healer =
+        { character with
+            id = healerId
+            name = "Healer"
+            actions = healActions
+            stats = healerStats }
+
     let pos2 = (Row 2, Col 4)
     let character2 = { character with id = System.Guid.NewGuid() }
 
-    let characters = Map [ (character.id, character) ]
+    let characters =
+        Map [ (character.id, character)
+              (healer.id, healer) ]
+
     let characters2 = Map [ (character2.id, character2) ]
 
     let board =
         board
         |> Board.placeCharacter playerPos character.id
         |> Board.placeCharacter pos2 character2.id
+        |> Board.placeCharacter healerPos healer.id
 
 
     let gameDetails =

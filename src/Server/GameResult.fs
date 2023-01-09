@@ -52,10 +52,11 @@ let intoCharacterDto (c: Character) (b: Option<Board>) (p: Option<Player>) : Cha
     let cls = intoClsDto c.stats.cls
     let properties = System.Collections.Generic.Dictionary<string, System.Object>()
     // TODO properties
-    properties.Add("Attack", c |> Character.atk)
-    properties.Add("HP", c |> Character.hp)
-    properties.Add("DEF", c |> Character.def)
-    c |> Character.heal |> fun heal -> if heal > 0 then properties.Add("HEAL", heal)
+    properties.Add("atk", c |> Character.atk)
+    properties.Add("hp", c |> Character.hp)
+    properties.Add("maxHp", c |> Character.maxHp)
+    properties.Add("def", c |> Character.def)
+    c |> Character.heal |> fun heal -> if heal > 0 then properties.Add("heal", heal)
 
     let position =
         match b with
