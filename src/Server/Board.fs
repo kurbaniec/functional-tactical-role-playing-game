@@ -36,10 +36,6 @@ let findCharacter (c: CharacterId) (board: Board) : CellPosition =
             | Some cid -> if cid = c then Some(row, col) else None
             | None -> None))
 
-let validCharacterMoves (c: CharacterId) (board: Board) : list<CellPosition> =
-
-    []
-
 let containsPosition (pos: CellPosition) (b: Board) : bool =
     let (row, col) = pos
 
@@ -77,6 +73,11 @@ let moveCharacter (cid: CharacterId) (target: CellPosition) (board: Board) : Boa
     let fromTile = findTile from board |> Tile.leave
     let targetTile = findTile target board |> Tile.occupy cid
     board |> updateTile fromTile from |> updateTile targetTile target
+
+let removeCharacter (c: CharacterId) (board: Board) : Board =
+    let pos = board |> findCharacter c
+    let tile = board |> findTile pos |> Tile.leave
+    board |> updateTile tile pos
 
 let findNeighbors (pos: CellPosition) (b: Board) : list<CellPosition * Tile> =
     // let row, col = pos

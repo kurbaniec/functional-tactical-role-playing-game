@@ -70,6 +70,7 @@ and CharacterStats =
         cls: CharacterClass
     }
 
+// TODO: add player field to streamline design
 and Character =
     { id: CharacterId
       name: string
@@ -95,6 +96,7 @@ module Character =
         |> fun hp -> { character.stats with hp = hp }
         |> fun stats -> { character with stats = stats }
 
+    let isDefeated (character: Character): bool = character.stats.hp <= 0
 
 
 
@@ -163,50 +165,6 @@ type GameDetails =
       player1Characters: Characters
       player2Characters: Characters
       board: Board }
-
-module GameDetails =
-    let board (d: GameDetails) = d.board
-
-    let characters (p: Player) (d: GameDetails) =
-        match p with
-        | Player1 -> d.player1Characters
-        | Player2 -> d.player2Characters
-
-    let fromCharacterId (cid: CharacterId) (game: GameDetails) : Character * Player =
-        game.player1Characters
-        |> Map.tryFind cid
-        |> function
-            | Some c -> (c, Player1)
-            | None -> game.player2Characters |> Map.find cid |> fun c -> (c, Player2)
-
-    let updateCharacter (c: Character) (p: Player) (d: GameDetails): GameDetails =
-        d.player1Characters
-        |> Map.containsKey c.id
-        |> function
-            | true ->
-                let p1c = d.player1Characters |> Map.change c.id (fun old ->
-                    match old with
-                    | Some _ -> Some c
-                    | None -> None
-                    )
-                { d with player1Characters = p1c }
-            | false ->
-                let p2c = d.player2Characters |> Map.change c.id (fun old ->
-                    match old with
-                    | Some _ -> Some c
-                    | None -> None
-                    )
-                { d with player2Characters = p2c }
-
-
-
-
-type Start = { rows: int; cols: int }
-
-// type Cursor = {
-//     row: int
-//     col: int
-// }
 
 type PlayerOversee =
     { details: GameDetails
