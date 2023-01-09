@@ -68,16 +68,19 @@ type GameStateUpdate = List<GameResult> * GameState
 
 module PlayerOverseeState =
     let selectCharacter (p: Player) (c: CharacterId) (state: PlayerOversee) : GameStateUpdate =
-        let character = state.details |> GameDetails.characters p |> Map.tryFind c
+        let character =
+            state.details
+            |> GameDetails.characters p
+            |> Map.tryFind c
+            |> Option.filter (fun c -> ( state.awaitingTurns |> Map.containsKey c.id ))
 
-        // TODO: check if character was already moved
         match character with
         | None -> ([], PlayerOverseeState(state))
         | Some c ->
             let availableMoves =
                 state.details
                 |> GameDetails.board
-                |> Board.availablePlayerMoves c.movement.distance c.id
+                |> Board.availablePlayerMoves c
 
             printfn "Available moves"
             printfn $"%A{availableMoves}"
@@ -122,6 +125,7 @@ module PlayerMoveState =
             // Look for all tiles in distance
             let boardPredicate (t: Tile) = true
 
+            // TODO: Move extraction logic to board module?
             // Filter for actions that can be executed
             let boardActionExtractor (actionPredicate: Action.ApplicableToPredicate) (foundTiles: Board.FoundTiles) =
                 foundTiles
@@ -131,19 +135,6 @@ module PlayerMoveState =
                 |> List.map (fun cid -> details |> GameDetails.fromCharacterId cid)
                 |> List.filter (fun (c, p) -> actionPredicate p c)
                 |> List.map (fun (c, _) -> c |> Character.id)
-
-            // let boardActionPredicate (actionPredicate: Action.ApplicableToPredicate) (t: Tile) =
-            //     t
-            //     |> Tile.characterId
-            //     |> Option.map (fun cid ->
-            //         details |> GameDetails.fromCharacterId cid |> fun (p, c) -> actionPredicate c p)
-            //     |> Option.defaultValue false
-            //
-            // let extract (foundTiles: Board.FoundTiles) =
-            //     foundTiles
-            //     |> Board.FoundTiles.tiles
-            //     |> List.map Tile.characterId
-            //     |> List.choose id
 
             let availableActions =
                 state.character.actions

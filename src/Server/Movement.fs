@@ -10,3 +10,24 @@ module Type =
         | Foot -> footDistance.Value
         | Mount -> mountDistance.Value
         | Fly -> flyDistance.Value
+
+type MovementPredicate = Tile -> bool
+
+let createMovementPredicate (character: Character) =
+    let movement = character |> Character.movement
+
+    match movement.kind with
+    | Foot
+    | Mount ->
+        let landPredicate (tile: Tile) =
+            if tile |> Tile.isOccupied then
+                false
+            else
+                match tile with
+                | Land _ -> true
+                | _ -> false
+
+        landPredicate
+    | Fly ->
+        let flyPredicate (tile: Tile) = tile |> Tile.isOccupied |> not
+        flyPredicate

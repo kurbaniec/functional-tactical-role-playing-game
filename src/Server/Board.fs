@@ -165,22 +165,17 @@ let pathfinding
 
     doPathfinding frontier foundTiles maxDistance predicate b |> extract
 
-let availablePlayerMoves (d: Distance) (c: CharacterId) (b: Board) : list<CellPosition> =
-    let startPos = findCharacter c b
-    let d = Distance.value d
-    // TODO pass predicate with proper predicate
-    let predicate (tile: Tile) : bool = true
+let availablePlayerMoves (character: Character) (board: Board) : list<CellPosition> =
+    let cid = character |> Character.id
+    let startPos = findCharacter cid board
+    let movement = character |> Character.movement
+    let distance = movement.distance |> Distance.value
+    let predicate = Movement.createMovementPredicate character
     // See: https://devonburriss.me/converting-fsharp-csharp/
-    // let extract (found: FoundTiles): list<CellPosition> =
-    //     found
-    //     |> Map.values
-    //     |> fun v -> v :> seq<_>
-    //     |> Seq.map fst
-    //     |> Seq.toList
     let extract (found: FoundTiles) : list<CellPosition> =
         found |> Map.keys :> seq<_> |> Seq.toList
 
-    pathfinding startPos d predicate extract b
+    pathfinding startPos distance predicate extract board
 
 let find
     (startPos: CellPosition)

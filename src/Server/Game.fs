@@ -23,7 +23,7 @@ let newGame (_: unit) : List<GameResult> * Game =
           endTurn ]
 
     let movement =
-        { kind = MovementType.Foot
+        { kind = MovementType.Fly
           distance = Distance 2 }
 
     let character: Character =

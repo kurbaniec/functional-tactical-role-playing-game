@@ -88,6 +88,8 @@ module Character =
     let atk (character: Character) = character.stats.atk
     let heal (character: Character) = character.stats.heal
 
+    let movement (character: Character) = character.movement
+
     let updateHp (amount: int) (character: Character): Character =
         character
         |> hp
