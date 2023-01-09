@@ -1,5 +1,7 @@
 ﻿module GameState
 
+open Utils
+
 module GameDetails =
     let board (d: GameDetails) = d.board
 
@@ -15,35 +17,51 @@ module GameDetails =
             | Some c -> (c, Player1)
             | None -> game.player2Characters |> Map.find cid |> fun c -> (c, Player2)
 
-    let updateCharacter (c: Character) (p: Player) (d: GameDetails): GameDetails =
+    let updateCharacter (c: Character) (p: Player) (d: GameDetails) : GameDetails =
         d.player1Characters
         |> Map.containsKey c.id
         |> function
             | true ->
-                let p1c = d.player1Characters |> Map.change c.id (fun old ->
-                    match old with
-                    | Some _ -> Some c
-                    | None -> None
-                    )
+                let p1c =
+                    d.player1Characters
+                    |> Map.change c.id (fun old ->
+                        match old with
+                        | Some _ -> Some c
+                        | None -> None)
+
                 { d with player1Characters = p1c }
             | false ->
-                let p2c = d.player2Characters |> Map.change c.id (fun old ->
-                    match old with
-                    | Some _ -> Some c
-                    | None -> None
-                    )
+                let p2c =
+                    d.player2Characters
+                    |> Map.change c.id (fun old ->
+                        match old with
+                        | Some _ -> Some c
+                        | None -> None)
+
                 { d with player2Characters = p2c }
 
-    let removeCharacter (c: Character) (p: Player) (d: GameDetails): GameDetails =
+    let removeCharacter (c: Character) (p: Player) (d: GameDetails) : GameDetails =
         let cid = c |> Character.id
         let board = d.board |> Board.removeCharacter cid
+
         match p with
         | Player1 ->
             let characters = d.player1Characters |> Map.remove cid
-            { d with player1Characters = characters; board = board }
+
+            { d with
+                player1Characters = characters
+                board = board }
         | Player2 ->
             let characters = d.player2Characters |> Map.remove cid
-            { d with player2Characters = characters; board = board }
+
+            { d with
+                player2Characters = characters
+                board = board }
+
+    let isDefeated (p: Player) (d: GameDetails) : bool =
+        match p with
+        | Player1 -> d.player1Characters |> Map.isEmpty
+        | Player2 -> d.player2Characters |> Map.isEmpty
 
 type GameStateUpdate = List<GameResult> * GameState
 
@@ -194,7 +212,6 @@ module PlayerActionSelectState =
     let update (msg: GameMessage) (state: PlayerActionSelect) : GameStateUpdate =
         match msg with
         | SelectAction (p, a) -> selectAction p a state
-
         | _ -> ([], PlayerActionSelectState(state))
 
 module PlayerActionState =
@@ -210,76 +227,88 @@ module PlayerActionState =
 
         (msg, state)
 
-    let rec performAction (player: Player) (cid: CharacterId) (state: PlayerAction) =
+    let performAction (player: Player) (cid: CharacterId) (state: PlayerAction) : GameStateUpdate =
+        let thisCharacter = state.character
         let selectableAction = state.action
         let action = selectableAction.action
         let actionType = action.kind
 
-        if not <| List.contains cid selectableAction.selectableCharacters then
-            ([], PlayerActionState(state))
-        else
-            let thisCharacter = state.character
+        let validSelection (cid: CharacterId) =
+            if List.contains cid selectableAction.selectableCharacters then
+                Ok()
+            else
+                Error()
+
+        let performAction () =
             let otherCharacter = state.details |> GameDetails.fromCharacterId cid |> fst
 
-            let awaitingTurns = state.awaitingTurns |> Map.remove (thisCharacter |> Character.id)
+            Action.performAction thisCharacter otherCharacter action
 
-            let msg =
-                match Action.performAction action thisCharacter otherCharacter with
-                | Some otherCharacter ->
-                    // TODO check if character is defeated
+        let actionWithoutChanges = ([], state.details)
 
-                    // TODO: send update or delete character msg
+        let actionWithChanges otherCharacter =
+            let cid = otherCharacter |> Character.id
 
-                    // Return details
+            if otherCharacter |> Character.isDefeated then
+                state.details
+                |> GameDetails.removeCharacter otherCharacter player
+                |> fun details -> ([ CharacterDefeat cid ], details)
+            else
+                state.details
+                |> GameDetails.updateCharacter otherCharacter player
+                |> fun details -> ([ CharacterUpdate cid ], details)
 
-                    let msg = [ CharacterUpdate(otherCharacter |> Character.id) ]
+        let actionChooser otherCharacter =
+            match otherCharacter with
+            | Some oc -> actionWithChanges oc
+            | None -> actionWithoutChanges
 
-                    let details = { state.details with  }
-                    []
+        let stateCheck msgAndDetails =
+            let (msg, details) = msgAndDetails
+            let oppositePlayer = player |> Player.opposite
+
+            if details |> GameDetails.isDefeated oppositePlayer then
+                // Game End!
+                match player with
+                | Player1 -> ([ PlayerWin ], Player1Wins)
+                | Player2 -> ([ PlayerWin ], Player2Wins)
+            else
+                // TODO: when awaiting turns is merge to GameDetails make if else
+                let awaitingTurns =
+                    state.awaitingTurns |> Map.remove (thisCharacter |> Character.id)
+
+                if awaitingTurns |> Map.isEmpty then
+                    // Player turn switch
+                    let awaitingTurns = details |> GameDetails.characters oppositePlayer
+                    let details = { details with turnOf = oppositePlayer }
+
+                    let state =
+                        PlayerOverseeState(
+                            { details = details
+                              awaitingTurns = awaitingTurns }
+                        )
+
+                    // TODO: change to: (msg @ [ PlayerOversee oppositePlayer ], state)
+                    (msg @ [ PlayerOversee player ], state)
+                else
+                    // Player still has characters to move
+                    let state =
+                        PlayerOverseeState(
+                            { details = details
+                              awaitingTurns = awaitingTurns }
+                        )
+
+                    (msg @ [ PlayerOversee player ], state)
 
 
-                | None ->
-                    // TODO return empty message and details copy
-                    []
+        cid
+        |> validSelection
+        |> Result.map performAction
+        |> Result.map actionChooser
+        |> Result.map stateCheck
+        |> Result.defaultValue ([], PlayerActionState(state))
 
 
-            // TODO: check if awaitingTurns is empty
-
-            // TODO: implement phase switch
-
-            let msg = [ PlayerOversee player ]
-
-            let state =
-                PlayerOverseeState
-                    { details = state.details
-                      awaitingTurns = awaitingTurns }
-
-            (msg, state)
-
-            match actionType with
-            | End ->
-                let awaitingTurns = state.awaitingTurns |> Map.remove cid
-
-
-            | _ ->
-
-
-                // TODO state result msg
-                let msg = []
-                // TODO perform action
-
-                // TODO perform updates
-
-                // TODO check win
-                let state =
-                    PlayerActionState
-                        { details = state.details
-                          awaitingTurns = state.awaitingTurns
-                          character = state.character
-                          availableActions = state.availableActions
-                          action = selectableAction }
-
-                (msg, state)
 
 
     let update (msg: GameMessage) (state: PlayerAction) : GameStateUpdate =

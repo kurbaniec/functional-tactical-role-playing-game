@@ -29,24 +29,31 @@ let newGame (_: unit) : List<GameResult> * Game =
     let character: Character =
         { id = cid
           name = name
-          stats = {
-              hp = 10
+          stats =
+            { hp = 10
               def = 10
               atk = 5
               heal = 0
-              cls = cls
-          }
+              cls = cls }
           actions = actions
           movement = movement }
 
-    let characters = Map [ (character.id, character) ]
+    let pos2 = (Row 2, Col 4)
+    let character2 = { character with id = System.Guid.NewGuid() }
 
-    let board = Board.placeCharacter playerPos character.id board
+    let characters = Map [ (character.id, character) ]
+    let characters2 = Map [ (character2.id, character2) ]
+
+    let board =
+        board
+        |> Board.placeCharacter playerPos character.id
+        |> Board.placeCharacter pos2 character2.id
+
 
     let gameDetails =
         { turnOf = Player1
           player1Characters = characters
-          player2Characters = Map []
+          player2Characters = characters2
           board = board }
 
     let playerOversee =

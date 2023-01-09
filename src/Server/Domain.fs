@@ -161,11 +161,12 @@ type Board = Map<Row, Map<Col, Tile>>
 
 type GameDetails =
     { turnOf: Player
-      // TODO: change to characters: Map<Player, Map<cid, Character>
+      // TODO: change to characters: Map<Player, Map<cid, Character>?
       player1Characters: Characters
       player2Characters: Characters
       board: Board }
 
+// TODO: move awaiting turns to GameDetails
 type PlayerOversee =
     { details: GameDetails
       awaitingTurns: Characters }
@@ -231,6 +232,8 @@ type GameResult =
     | CharacterUpdate of CharacterId
     | PlayerActionSelection of Player * ApplicableActions
     | PlayerAction of Player * list<CharacterId>
+    | CharacterDefeat of CharacterId
+    | PlayerWin
 
 
 module GameResult =

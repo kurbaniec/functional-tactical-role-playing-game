@@ -33,7 +33,7 @@ module Attack =
         |> round
         |> int
 
-    let attack (action: Action) (thisCharacter: Character) (otherCharacter: Character) : ActionResult =
+    let attack (thisCharacter: Character) (otherCharacter: Character) (action: Action) : ActionResult =
         otherCharacter
         |> Character.updateHp (
             weaponTriangle thisCharacter otherCharacter
@@ -45,16 +45,16 @@ module Heal =
 
     let rec healValue (thisCharacter: Character) (otherCharacter: Character) = thisCharacter |> Character.heal
 
-    let heal (action: Action) (thisCharacter: Character) (otherCharacter: Character) : ActionResult =
+    let heal (thisCharacter: Character) (otherCharacter: Character) (action: Action) : ActionResult =
         otherCharacter
         |> Character.updateHp (healValue thisCharacter otherCharacter)
         |> Some
 
-let performAction (action: Action) (thisCharacter: Character) (otherCharacter: Character) : ActionResult =
+let performAction (thisCharacter: Character) (otherCharacter: Character) (action: Action) : ActionResult =
     match action.kind with
     | End -> None
-    | Attack -> Attack.attack action thisCharacter otherCharacter
-    | Heal -> Heal.heal action thisCharacter otherCharacter
+    | Attack -> Attack.attack thisCharacter otherCharacter action
+    | Heal -> Heal.heal thisCharacter otherCharacter action
 
 type ApplicableToPredicate = Player -> Character -> bool
 
