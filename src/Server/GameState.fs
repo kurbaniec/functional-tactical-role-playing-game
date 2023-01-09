@@ -1,5 +1,6 @@
 ﻿module GameState
 
+open Shared.DomainDto
 open Utils
 
 module GameDetails =
@@ -101,7 +102,7 @@ module PlayerOverseeState =
 
 module PlayerMoveState =
     let deselectCharacter (p: Player) (state: PlayerMove) : GameStateUpdate =
-        let msg = [ PlayerOversee p ]
+        let msg = [ PlayerOversee ]
 
         let state =
             PlayerOverseeState
@@ -233,6 +234,8 @@ module PlayerActionState =
         let action = selectableAction.action
         let actionType = action.kind
 
+        let oppositePlayer = player |> Player.opposite
+
         let validSelection (cid: CharacterId) =
             if List.contains cid selectableAction.selectableCharacters then
                 Ok()
@@ -251,11 +254,11 @@ module PlayerActionState =
 
             if otherCharacter |> Character.isDefeated then
                 state.details
-                |> GameDetails.removeCharacter otherCharacter player
+                |> GameDetails.removeCharacter otherCharacter oppositePlayer
                 |> fun details -> ([ CharacterDefeat cid ], details)
             else
                 state.details
-                |> GameDetails.updateCharacter otherCharacter player
+                |> GameDetails.updateCharacter otherCharacter oppositePlayer
                 |> fun details -> ([ CharacterUpdate cid ], details)
 
         let actionChooser otherCharacter =
@@ -265,13 +268,12 @@ module PlayerActionState =
 
         let stateCheck msgAndDetails =
             let (msg, details) = msgAndDetails
-            let oppositePlayer = player |> Player.opposite
 
             if details |> GameDetails.isDefeated oppositePlayer then
                 // Game End!
                 match player with
-                | Player1 -> ([ PlayerWin ], Player1Wins)
-                | Player2 -> ([ PlayerWin ], Player2Wins)
+                | Player1 -> ([ PlayerWin ], PlayerWinState details)
+                | Player2 -> ([ PlayerWin ], PlayerWinState details)
             else
                 // TODO: when awaiting turns is merge to GameDetails make if else
                 let awaitingTurns =
@@ -279,7 +281,8 @@ module PlayerActionState =
 
                 if awaitingTurns |> Map.isEmpty then
                     // Player turn switch
-                    let awaitingTurns = details |> GameDetails.characters oppositePlayer
+                    // TODO: change when implementing second player
+                    (*let awaitingTurns = details |> GameDetails.characters oppositePlayer
                     let details = { details with turnOf = oppositePlayer }
 
                     let state =
@@ -288,8 +291,17 @@ module PlayerActionState =
                               awaitingTurns = awaitingTurns }
                         )
 
-                    // TODO: change to: (msg @ [ PlayerOversee oppositePlayer ], state)
-                    (msg @ [ PlayerOversee player ], state)
+                    (msg @ [ PlayerOversee oppositePlayer ], state)*)
+                    let awaitingTurns = details |> GameDetails.characters player
+                    let details = { details with turnOf = player }
+
+                    let state =
+                        PlayerOverseeState(
+                            { details = details
+                              awaitingTurns = awaitingTurns }
+                        )
+
+                    (msg @ [ PlayerOversee ], state)
                 else
                     // Player still has characters to move
                     let state =
@@ -298,7 +310,7 @@ module PlayerActionState =
                               awaitingTurns = awaitingTurns }
                         )
 
-                    (msg @ [ PlayerOversee player ], state)
+                    (msg @ [ PlayerOversee ], state)
 
 
         cid

@@ -197,8 +197,7 @@ type GameState =
     | PlayerMoveState of PlayerMove
     | PlayerActionSelectState of PlayerActionSelect
     | PlayerActionState of PlayerAction
-    | Player1Wins
-    | Player2Wins
+    | PlayerWinState of GameDetails
 
 module GameState =
     let details (gs: GameState) : GameDetails =
@@ -207,7 +206,7 @@ module GameState =
         | PlayerMoveState s -> s.details
         | PlayerActionSelectState s -> s.details
         | PlayerActionState s -> s.details
-        | _ -> failwith "gamestate overview"
+        | PlayerWinState s -> s
 
     let turnOf (gs: GameState) : Player = gs |> details |> fun d -> d.turnOf
 
@@ -227,7 +226,7 @@ type GameMessage =
 // See: https://github.com/fsharp/fslang-suggestions/issues/743
 type GameResult =
     | Start of GameId
-    | PlayerOversee of Player
+    | PlayerOversee
     | PlayerMoveSelection of Player * CharacterId * list<CellPosition>
     | CharacterUpdate of CharacterId
     | PlayerActionSelection of Player * ApplicableActions
@@ -249,3 +248,5 @@ module GameResult =
         | CharacterUpdate _ -> AllRecipients
         | PlayerActionSelection (p, _) -> PlayerRecipient p
         | PlayerAction (p, _) -> PlayerRecipient p
+        | CharacterDefeat _ -> AllRecipients
+        | PlayerWin _ -> AllRecipients

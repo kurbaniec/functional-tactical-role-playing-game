@@ -103,6 +103,14 @@ module DomainDto =
         selectableCharacters: ResizeArray<string>
     }
 
+    type CharacterDefeatResult = {
+        character: string
+    }
+
+    type PlayerWin = {
+        player: PlayerDto
+    }
+
     type IResult =
         | StartResult of StartResult
         | PlayerOverseeResult of PlayerOverseeResult
@@ -110,6 +118,8 @@ module DomainDto =
         | CharacterUpdateResult of CharacterUpdateResult
         | PlayerActionSelectionResult of PlayerActionSelectionResult
         | PlayerActionResult of PlayerActionResult
+        | CharacterDefeatResult of CharacterDefeatResult
+        | PlayerWinResult of PlayerWin
 
 
 

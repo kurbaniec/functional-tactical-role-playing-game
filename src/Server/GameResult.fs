@@ -1,9 +1,11 @@
 ﻿module GameResult
 
 
+open GameState
 open Microsoft.FSharp.Core
 open Shared.DomainDto
 open FSharpx.Collections
+open Utils
 
 let intoTileDto (tile: Tile) : TileDto =
     match tile with
@@ -73,7 +75,8 @@ let intoStartDto (gid: GameId) (game: GameDetails) =
     let boardDto = intoBoardDto game.board
 
     let characters =
-        game.player1Characters.Values
+        Map.join game.player1Characters game.player2Characters
+        |> Map.values
         |> ResizeArray
         |> ResizeArray.map (fun c -> intoCharacterDto c <| Some game.board <| Some Player1)
 
@@ -83,8 +86,8 @@ let intoStartDto (gid: GameId) (game: GameDetails) =
           characters = characters }
 
 
-let intoPlayerOverseeDto (player: Player) (game: GameDetails) =
-    PlayerOverseeResult { player = intoPlayerDto player }
+let intoPlayerOverseeDto (game: GameDetails) =
+    PlayerOverseeResult { player = intoPlayerDto <| game.turnOf }
 
 let intoPlayerMoveSelectionDto
     (player: Player)
@@ -96,14 +99,11 @@ let intoPlayerMoveSelectionDto
         { character = cid.ToString()
           availableMoves = availableMoves |> List.map intoPositionDto |> ResizeArray }
 
-// TODO: Move somewhere else
-// See: https://stackoverflow.com/a/3974842
-let join (p: Map<'a, 'b>) (q: Map<'a, 'b>) =
-    Map.fold (fun acc key value -> Map.add key value acc) p q
+
 
 let intoCharacterUpdateDto (cid: CharacterId) (game: GameDetails) =
     let character =
-        join game.player1Characters game.player2Characters
+        Map.join game.player1Characters game.player2Characters
         |> Map.find cid
         |> fun c -> intoCharacterDto c (Some game.board) None
 
@@ -122,16 +122,24 @@ let intoPlayerActionSelectionDto (p: Player) (actions: ApplicableActions) =
 let intoPlayerActionDto (player: Player) (cids: list<CharacterId>) =
     PlayerActionResult { selectableCharacters = cids |> List.map (fun cid -> cid.ToString()) |> ResizeArray }
 
+let intoCharacterDefeatDto (cid: CharacterId) =
+    CharacterDefeatResult { character = cid.ToString() }
+
+let intoPlayerWinDto (game: GameDetails) =
+    PlayerWinResult { player = intoPlayerDto <| game.turnOf }
+
 
 let intoDto (gameResult: GameResult) (game: GameDetails) =
     let res: IResult =
         match gameResult with
         | Start guid -> intoStartDto guid game
-        | PlayerOversee player -> intoPlayerOverseeDto player game
+        | PlayerOversee -> intoPlayerOverseeDto game
         | PlayerMoveSelection (p, c, m) -> intoPlayerMoveSelectionDto p c m game
         | CharacterUpdate cid -> intoCharacterUpdateDto cid game
         | PlayerActionSelection (p, a) -> intoPlayerActionSelectionDto p a
         | PlayerAction (p, cids) -> intoPlayerActionDto p cids
+        | CharacterDefeat cid -> intoCharacterDefeatDto cid
+        | PlayerWin -> intoPlayerWinDto game
         | _ -> failwith "intoDto"
 
     res

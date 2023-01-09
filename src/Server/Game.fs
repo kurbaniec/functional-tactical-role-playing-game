@@ -62,7 +62,7 @@ let newGame (_: unit) : List<GameResult> * Game =
 
     let player1Oversee = PlayerOverseeState(playerOversee)
 
-    ([ Start(gid); PlayerOversee(Player1) ], { id = gid; state = player1Oversee })
+    ([ Start(gid); PlayerOversee ], { id = gid; state = player1Oversee })
 
 let isCorrectPlayer (player: Player) (game: Game) =
     game.state |> GameState.details |> fun d -> d.turnOf = player
@@ -78,5 +78,5 @@ let update (player: Player) (msg: GameMessage) (game: Game) : List<GameResult> *
         | PlayerMoveState s -> PlayerMoveState.update msg s
         | PlayerActionSelectState s -> PlayerActionSelectState.update msg s
         | PlayerActionState s -> PlayerActionState.update msg s
-        | _ -> failwith "update"
+        | PlayerWinState s -> ([], PlayerWinState s) // TODO: Send game already ended message
         |> fun (r, s) -> (r, { game with state = s })
