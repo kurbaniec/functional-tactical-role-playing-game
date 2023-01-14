@@ -4,6 +4,8 @@ open System.Collections.Generic
 open Domain.GameResult
 open Fable.Remoting.Server
 open Fable.Remoting.Giraffe
+open Microsoft.AspNetCore.Http
+open Microsoft.Extensions.Logging
 open Saturn
 
 open Shared
@@ -85,13 +87,18 @@ module Storage =
         updateGame game
         List.iter (fun r -> enqueueResult r game) results
 
-let gameApi =
+open Giraffe
+
+let createGameApi (ctx: HttpContext) =
     { start =
         fun () ->
             async {
                 let results, game = Game.newGame ()
                 Storage.createGame game
                 List.iter (fun r -> Storage.enqueueResult r game) results
+                // See: https://stackoverflow.com/a/51255169/12347616
+                ctx.GetLogger<IGameApi>()
+                |> fun l -> l.LogInformation($"New Game [{game.id}] initialized")
                 return (game.id.ToString(), PlayerDto.Player1)
             }
 
@@ -106,14 +113,25 @@ let gameApi =
           fun (id: string) (player: PlayerDto) (msg: IMessage) ->
               async {
                   let id = System.Guid.Parse(id)
+                  ctx.GetLogger<IGameApi>()
+                  |> fun l -> l.LogInformation($"Update {msg}")
                   return Storage.processMessage player id msg
               } }
+
+// See: https://github.com/Zaid-Ajaj/Fable.Remoting/blob/master/documentation/src/dependency-injection.md
+let createApiFromContext (httpContext: HttpContext) : IGameApi =
+    createGameApi httpContext
 
 let webApp =
     Remoting.createApi ()
     |> Remoting.withRouteBuilder Route.builder
-    |> Remoting.fromValue gameApi
+    |> Remoting.fromContext createApiFromContext
     |> Remoting.buildHttpHandler
+
+
+// See: https://stackoverflow.com/a/51570113/12347616
+let configureLogging (logging: ILoggingBuilder) =
+     logging.AddFilter("Microsoft.AspNetCore.Hosting.Diagnostics*", LogLevel.None) |> ignore
 
 let app =
     application {
@@ -121,6 +139,7 @@ let app =
         memory_cache
         use_static "public"
         use_gzip
+        logging configureLogging
     }
 
 [<EntryPoint>]
