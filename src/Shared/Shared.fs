@@ -79,7 +79,7 @@ module DomainDto =
 
     type PlayerOverseeResult = {
         player: PlayerDto
-
+        selectableCharacters: ResizeArray<string>
     }
 
     type PlayerMoveSelectionResult =

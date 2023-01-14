@@ -192,6 +192,7 @@ class GameUI {
         this.removeHighlight();
         this.selection.clear();
         if (!this.myTurn()) return;
+        this.highlightCharacters(result.selectableCharacters)
         this.gameState.update = (input) => {
             if (input === Input.Enter) {
                 const c = this.findCharacter(this.cursor.positionDto)
@@ -210,6 +211,7 @@ class GameUI {
 
     /** @param {DomainDto_PlayerMoveSelectionResult} result **/
     onPlayerMoveSelectionResult(result) {
+        this.removeHighlight();
         this.highlightPositions(result.availableMoves)
         this.gameState.update = (input) => {
             if (input === Input.Enter) {

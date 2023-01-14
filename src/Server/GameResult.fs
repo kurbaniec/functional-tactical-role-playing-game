@@ -95,6 +95,7 @@ let intoStartDto (gid: GameId) (game: GameState) =
         |> Map.values
         |> ResizeArray
         |> ResizeArray.map (fun c -> intoCharacterDto c <| Some game.board <| Some Player2)
+
     let characters = characters1 |> ResizeArray.append characters2
 
     StartResult
@@ -104,7 +105,17 @@ let intoStartDto (gid: GameId) (game: GameState) =
 
 
 let intoPlayerOverseeDto (game: GameState) =
-    PlayerOverseeResult { player = intoPlayerDto <| game.turnOf }
+    let selectableCharacters =
+        game
+        |> GameState.awaitingTurns
+        |> Map.values
+        |> Seq.map (fun c -> c.id.ToString())
+        |> ResizeArray
+
+    PlayerOverseeResult
+        { player = intoPlayerDto <| game.turnOf
+          selectableCharacters = selectableCharacters
+        }
 
 let intoPlayerMoveSelectionDto
     (player: Player)

@@ -226,6 +226,7 @@ type GamePhase =
 
 type GameId = System.Guid
 
+// TODO: Remove player?
 type GameResult =
     | Start of GameId
     | PlayerOversee

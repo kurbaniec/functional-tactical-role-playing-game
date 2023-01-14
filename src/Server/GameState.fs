@@ -6,71 +6,72 @@ open Utils
 type GameStateUpdate = List<GameResult> * GameState
 
 module GameState =
-    let turnOf (gameState: GameState) : Player = gameState.turnOf
 
+    let player1Characters (gameState: GameState) = gameState.player1Characters
+    let player2Characters (gameState: GameState) = gameState.player2Characters
     let board (gameState: GameState) = gameState.board
-
+    let turnOf (gameState: GameState) = gameState.turnOf
+    let awaitingTurns (gameState: GameState) = gameState.awaitingTurns
     let phase (gameState: GameState) = gameState.phase
-
     let previous (gameState: GameState) = gameState.previous
 
-    let characters (p: Player) (d: GameState) =
+    let characters (p: Player) (gameState: GameState) =
         match p with
-        | Player1 -> d.player1Characters
-        | Player2 -> d.player2Characters
+        | Player1 -> gameState.player1Characters
+        | Player2 -> gameState.player2Characters
 
-    let fromCharacterId (cid: CharacterId) (game: GameState) : Character * Player =
-        game.player1Characters
+    let fromCharacterId (cid: CharacterId) (gameState: GameState) : Character * Player =
+        gameState.player1Characters
         |> Map.tryFind cid
         |> function
             | Some c -> (c, Player1)
-            | None -> game.player2Characters |> Map.find cid |> fun c -> (c, Player2)
+            | None -> gameState.player2Characters |> Map.find cid |> fun c -> (c, Player2)
 
-    let updateCharacter (c: Character) (p: Player) (d: GameState) : GameState =
-        d.player1Characters
+    let updateCharacter (c: Character) (p: Player) (gameState: GameState) : GameState =
+        gameState.player1Characters
         |> Map.containsKey c.id
         |> function
             | true ->
                 let p1c =
-                    d.player1Characters
+                    gameState.player1Characters
                     |> Map.change c.id (fun old ->
                         match old with
                         | Some _ -> Some c
                         | None -> None)
 
-                { d with player1Characters = p1c }
+                { gameState with player1Characters = p1c }
             | false ->
                 let p2c =
-                    d.player2Characters
+                    gameState.player2Characters
                     |> Map.change c.id (fun old ->
                         match old with
                         | Some _ -> Some c
                         | None -> None)
 
-                { d with player2Characters = p2c }
+                { gameState with player2Characters = p2c }
 
-    let removeCharacter (c: Character) (p: Player) (d: GameState) : GameState =
+    let removeCharacter (c: Character) (p: Player) (gameState: GameState) : GameState =
         let cid = c |> Character.id
-        let board = d.board |> Board.removeCharacter cid
+        let board = gameState.board |> Board.removeCharacter cid
 
         match p with
         | Player1 ->
-            let characters = d.player1Characters |> Map.remove cid
+            let characters = gameState.player1Characters |> Map.remove cid
 
-            { d with
+            { gameState with
                 player1Characters = characters
                 board = board }
         | Player2 ->
-            let characters = d.player2Characters |> Map.remove cid
+            let characters = gameState.player2Characters |> Map.remove cid
 
-            { d with
+            { gameState with
                 player2Characters = characters
                 board = board }
 
-    let isDefeated (p: Player) (d: GameState) : bool =
+    let isDefeated (p: Player) (gameState: GameState) : bool =
         match p with
-        | Player1 -> d.player1Characters |> Map.isEmpty
-        | Player2 -> d.player2Characters |> Map.isEmpty
+        | Player1 -> gameState.player1Characters |> Map.isEmpty
+        | Player2 -> gameState.player2Characters |> Map.isEmpty
 
     let toEmptyUpdate (gameState: GameState) : GameStateUpdate = ([], gameState)
 
@@ -306,12 +307,12 @@ module PlayerActionPhase =
                         )
 
                     (msg @ [ PlayerOversee oppositePlayer ], state)*)
-                    let awaitingTurns = state |> GameState.characters player
+                    let awaitingTurns = state |> GameState.characters oppositePlayer
 
                     let state =
                         { state with
                             phase = PlayerOverseePhase
-                            turnOf = player
+                            turnOf = oppositePlayer
                             awaitingTurns = awaitingTurns
                             previous = None }
 
