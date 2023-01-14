@@ -31,8 +31,8 @@ module GameCoordinator =
 
     let enqueueResult (result: GameResult) (game: Game) =
         // TODO make this more clear
-        let go = GameState.details game.state
-        let resultDto = GameResult.intoDto result go
+        let gameState = game |> Game.state
+        let resultDto = GameResult.intoDto result gameState
         let recipient = GameResult.recipient result
 
         match recipient with

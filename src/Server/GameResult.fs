@@ -75,7 +75,7 @@ let intoCharacterDto (c: Character) (b: Option<Board>) (p: Option<Player>) : Cha
       position = position
       player = player }
 
-let intoStartDto (gid: GameId) (game: GameDetails) =
+let intoStartDto (gid: GameId) (game: GameState) =
     let boardDto = intoBoardDto game.board
 
     // let characters =
@@ -103,14 +103,14 @@ let intoStartDto (gid: GameId) (game: GameDetails) =
           characters = characters }
 
 
-let intoPlayerOverseeDto (game: GameDetails) =
+let intoPlayerOverseeDto (game: GameState) =
     PlayerOverseeResult { player = intoPlayerDto <| game.turnOf }
 
 let intoPlayerMoveSelectionDto
     (player: Player)
     (cid: CharacterId)
     (availableMoves: list<CellPosition>)
-    (game: GameDetails)
+    (game: GameState)
     =
     PlayerMoveSelectionResult
         { character = cid.ToString()
@@ -118,7 +118,7 @@ let intoPlayerMoveSelectionDto
 
 
 
-let intoCharacterUpdateDto (cid: CharacterId) (game: GameDetails) =
+let intoCharacterUpdateDto (cid: CharacterId) (game: GameState) =
     let character =
         Map.join game.player1Characters game.player2Characters
         |> Map.find cid
@@ -135,21 +135,21 @@ let intoPlayerActionDto (player: Player) (cids: list<CharacterId>) =
 let intoCharacterDefeatDto (cid: CharacterId) =
     CharacterDefeatResult { character = cid.ToString() }
 
-let intoPlayerWinDto (game: GameDetails) =
+let intoPlayerWinDto (game: GameState) =
     PlayerWinResult { player = intoPlayerDto <| game.turnOf }
 
 
-let intoDto (gameResult: GameResult) (game: GameDetails) =
+let intoDto (gameResult: GameResult) (gameState: GameState) =
     let res: IResult =
         match gameResult with
-        | Start guid -> intoStartDto guid game
-        | PlayerOversee -> intoPlayerOverseeDto game
-        | PlayerMoveSelection (p, c, m) -> intoPlayerMoveSelectionDto p c m game
-        | CharacterUpdate cid -> intoCharacterUpdateDto cid game
+        | Start guid -> intoStartDto guid gameState
+        | PlayerOversee -> intoPlayerOverseeDto gameState
+        | PlayerMoveSelection (p, c, m) -> intoPlayerMoveSelectionDto p c m gameState
+        | CharacterUpdate cid -> intoCharacterUpdateDto cid gameState
         | PlayerActionSelection (p, a) -> intoPlayerActionSelectionDto p a
         | PlayerAction (p, cids) -> intoPlayerActionDto p cids
         | CharacterDefeat cid -> intoCharacterDefeatDto cid
-        | PlayerWin -> intoPlayerWinDto game
+        | PlayerWin -> intoPlayerWinDto gameState
         | _ -> failwith "intoDto"
 
     res

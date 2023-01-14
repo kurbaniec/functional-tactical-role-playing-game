@@ -72,33 +72,48 @@ let newGame (gid: System.Guid) : List<GameResult> * Game =
         |> Board.placeCharacter healerPos healer.id
 
 
-    let gameDetails =
-        { turnOf = Player1
-          player1Characters = characters
-          player2Characters = characters2
-          board = board }
+    // let gameDetails =
+    //     { turnOf = Player1
+    //       player1Characters = characters
+    //       player2Characters = characters2
+    //       board = board }
+    //
+    // let playerOversee =
+    //     { details = gameDetails
+    //       awaitingTurns = gameDetails.player1Characters }
 
-    let playerOversee =
-        { details = gameDetails
-          awaitingTurns = gameDetails.player1Characters }
+    // let player1Oversee = PlayerOverseePhase(playerOversee)
 
-    let player1Oversee = PlayerOverseeState(playerOversee)
+    let phase = GamePhase.PlayerOverseePhase
+    let state: GameState = {
+         player1Characters = characters
+         player2Characters = characters2
+         board = board
+         turnOf = Player1
+         awaitingTurns = characters
+         phase = phase
+         previous = None
+    }
 
-    ([ Start(gid); PlayerOversee ], { id = gid; state = player1Oversee })
+    ([ Start(gid); PlayerOversee ], { id = gid; state = state })
 
 let isCorrectPlayer (player: Player) (game: Game) =
-    game.state |> GameState.details |> fun d -> d.turnOf = player
+    game.state |> GameState.turnOf |> (=) player
 
+let state (game: Game) = game.state
+
+let phase (game: Game) = game.state.phase
 
 let update (player: Player) (msg: GameMessage) (game: Game) : List<GameResult> * Game =
     // TODO rewrite as result type
     if not <| isCorrectPlayer player game then
         ([], game)
     else
-        match game.state with
-        | PlayerOverseeState s -> PlayerOverseeState.update msg s
-        | PlayerMoveState s -> PlayerMoveState.update msg s
-        | PlayerActionSelectState s -> PlayerActionSelectState.update msg s
-        | PlayerActionState s -> PlayerActionState.update msg s
-        | PlayerWinState s -> ([], PlayerWinState s) // TODO: Send game already ended message
+        let state = game |> state
+        match game |> phase with
+        | PlayerOverseePhase -> PlayerOverseePhase.update msg state
+        | PlayerMovePhase phase -> PlayerMoveState.update msg state phase
+        | PlayerActionSelectPhase phase -> PlayerActionSelectPhase.update msg state phase
+        | PlayerActionPhase phase -> PlayerActionPhase.update msg state phase
+        | PlayerWinPhase -> state |> GameState.toEmptyUpdate // TODO: Send game already ended message
         |> fun (r, s) -> (r, { game with state = s })

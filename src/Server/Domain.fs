@@ -163,58 +163,108 @@ type Board = Map<Row, Map<Col, Tile>>
 
 
 
-type GameDetails =
-    { turnOf: Player
-      // TODO: change to characters: Map<Player, Map<cid, Character>?
-      player1Characters: Characters
-      player2Characters: Characters
-      board: Board }
-
-// TODO: move awaiting turns to GameDetails
-type PlayerOversee =
-    { details: GameDetails
-      awaitingTurns: Characters }
+// type GameDetails =
+//     { turnOf: Player
+//       // TODO: change to characters: Map<Player, Map<cid, Character>?
+//       player1Characters: Characters
+//       player2Characters: Characters
+//       board: Board }
+//
+// // TODO: move awaiting turns to GameDetails
+// type PlayerOversee =
+//     { details: GameDetails
+//       awaitingTurns: Characters }
+//
+// type PlayerMove =
+//     { details: GameDetails
+//       awaitingTurns: Characters
+//       character: Character
+//       availableMoves: list<CellPosition> }
+//
+// type PlayerActionSelect =
+//     { details: GameDetails
+//       awaitingTurns: Characters
+//       character: Character
+//       availableActions: ApplicableActions }
+//
+// type PlayerAction =
+//     { details: GameDetails
+//       awaitingTurns: Characters
+//       character: Character
+//       availableActions: ApplicableActions
+//       action: SelectableAction }
+//
+// // TODO: merge game details + state
+// // details top level record prop with union state
+// type GameState =
+//     | PlayerOverseeState of PlayerOversee
+//     | PlayerMoveState of PlayerMove
+//     | PlayerActionSelectState of PlayerActionSelect
+//     | PlayerActionState of PlayerAction
+//     | PlayerWinState of GameDetails
+//
 
 type PlayerMove =
-    { details: GameDetails
-      awaitingTurns: Characters
-      character: Character
+    { character: Character
       availableMoves: list<CellPosition> }
 
 type PlayerActionSelect =
-    { details: GameDetails
-      awaitingTurns: Characters
-      character: Character
+    { character: Character
       availableActions: ApplicableActions }
 
 type PlayerAction =
-    { details: GameDetails
-      awaitingTurns: Characters
-      character: Character
+    { character: Character
       availableActions: ApplicableActions
       action: SelectableAction }
 
-// TODO: merge game details + state
-// details top level record prop with union state
-type GameState =
-    | PlayerOverseeState of PlayerOversee
-    | PlayerMoveState of PlayerMove
-    | PlayerActionSelectState of PlayerActionSelect
-    | PlayerActionState of PlayerAction
-    | PlayerWinState of GameDetails
-
-module GameState =
-    let details (gs: GameState) : GameDetails =
-        match gs with
-        | PlayerOverseeState s -> s.details
-        | PlayerMoveState s -> s.details
-        | PlayerActionSelectState s -> s.details
-        | PlayerActionState s -> s.details
-        | PlayerWinState s -> s
-
-    let turnOf (gs: GameState) : Player = gs |> details |> fun d -> d.turnOf
+type GamePhase =
+    | PlayerOverseePhase
+    | PlayerMovePhase of PlayerMove
+    | PlayerActionSelectPhase of PlayerActionSelect
+    | PlayerActionPhase of PlayerAction
+    | PlayerWinPhase
 
 type GameId = System.Guid
+
+type GameResult =
+    | Start of GameId
+    | PlayerOversee
+    | PlayerMoveSelection of Player * CharacterId * list<CellPosition>
+    | CharacterUpdate of CharacterId
+    | PlayerActionSelection of Player * ApplicableActions
+    | PlayerAction of Player * list<CharacterId>
+    | CharacterDefeat of CharacterId
+    | PlayerWin
+
+type RestoreState = {
+    state: GameState
+    undoResults: list<GameResult>
+}
+
+and GameState = {
+    player1Characters: Characters
+    player2Characters: Characters
+    board: Board
+    turnOf: Player
+    awaitingTurns: Characters
+    phase: GamePhase
+    previous: Option<RestoreState>
+}
+
+
+// module GameState =
+//     let details (gs: GameState) : GameDetails =
+//         match gs with
+//         | PlayerOverseeState s -> s.details
+//         | PlayerMoveState s -> s.details
+//         | PlayerActionSelectState s -> s.details
+//         | PlayerActionState s -> s.details
+//         | PlayerWinState s -> s
+//
+//     let turnOf (gs: GameState) : Player = gs |> details |> fun d -> d.turnOf
+
+
+
 type Game = { id: GameId; state: GameState }
 
 // TODO move player out?
@@ -228,15 +278,7 @@ type GameMessage =
 
 // TODO: Make tuples?
 // See: https://github.com/fsharp/fslang-suggestions/issues/743
-type GameResult =
-    | Start of GameId
-    | PlayerOversee
-    | PlayerMoveSelection of Player * CharacterId * list<CellPosition>
-    | CharacterUpdate of CharacterId
-    | PlayerActionSelection of Player * ApplicableActions
-    | PlayerAction of Player * list<CharacterId>
-    | CharacterDefeat of CharacterId
-    | PlayerWin
+
 
 
 module GameResult =

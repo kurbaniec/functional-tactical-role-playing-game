@@ -77,7 +77,10 @@ module DomainDto =
           board: BoardDto
           characters: ResizeArray<CharacterDto> }
 
-    type PlayerOverseeResult = { player: PlayerDto }
+    type PlayerOverseeResult = {
+        player: PlayerDto
+
+    }
 
     type PlayerMoveSelectionResult =
         { character: string
