@@ -11,49 +11,23 @@ open Saturn
 open Shared
 open Shared.DomainDto
 
-module Storage2 =
-    let todos = ResizeArray()
-
-    let addTodo (todo: Todo) =
-        if Todo.isValid todo.Description then
-            todos.Add todo
-            Ok()
-        else
-            Error "Invalid todo"
-
-    do
-        addTodo (Todo.create "Create new SAFE project") |> ignore
-
-        addTodo (Todo.create "Write your app") |> ignore
-        addTodo (Todo.create "Ship it !!!") |> ignore
-
-let todosApi =
-    { getTodos = fun () -> async { return Storage2.todos |> List.ofSeq }
-      addTodo =
-        fun todo ->
-            async {
-                return
-                    match Storage2.addTodo todo with
-                    | Ok () -> todo
-                    | Error e -> failwith e
-            } }
-
 type ConcurrentDictionary<'K, 'V> = System.Collections.Concurrent.ConcurrentDictionary<'K, 'V>
 type Dictionary<'K, 'V> = System.Collections.Generic.Dictionary<'K, 'V>
 type Queue<'V> = System.Collections.Generic.Queue<'V>
 type GameId = System.Guid
 
-module Storage =
+module GameCoordinator =
+    let private join = Queue<GameId>()
     let private games = Dictionary<GameId, Game>()
     let private player1Results = Dictionary<GameId, Queue<IResult>>()
     let private player2Results = Dictionary<GameId, Queue<IResult>>()
 
-    let updateGame (game: Game) : unit = games[ game.id ] <- game
+    open Giraffe
+    let logger (ctx: HttpContext) =
+        // See: https://stackoverflow.com/a/51255169/12347616
+        ctx.GetLogger<IGameApi>()
 
-    let createGame (game: Game) : unit =
-        updateGame game
-        player1Results.Add(game.id, Queue())
-        player2Results.Add(game.id, Queue())
+    let info (msg: string) (logger: ILogger) = logger.LogInformation(msg)
 
     let enqueueResult (result: GameResult) (game: Game) =
         // TODO make this more clear
@@ -70,7 +44,7 @@ module Storage =
             | Player1 -> player1Results[ game.id ].Enqueue(resultDto)
             | Player2 -> player2Results[ game.id ].Enqueue(resultDto)
 
-    let dequeResult (player: PlayerDto) (gameId: GameId) =
+    let dequeResult (player: PlayerDto) (gameId: GameId) (_: HttpContext) =
         let queue =
             match player with
             | PlayerDto.Player1 -> player1Results[gameId]
@@ -79,43 +53,56 @@ module Storage =
 
         if queue.Count = 0 then None else queue.Dequeue() |> Some
 
-    let processMessage (player: PlayerDto) (gameId: GameId) (msg: IMessage) =
+    let updateGame (game: Game) : unit = games[ game.id ] <- game
+
+    let processMessage (player: PlayerDto) (gameId: GameId) (msg: IMessage) (ctx: HttpContext) =
+        let logger = logger ctx
+        logger |> info $"New message: {msg}"
         let player = player |> GameMessage.fromPlayerDto
         let msg = msg |> GameMessage.fromDto player
         let game = games[gameId]
         let results, game = Game.update player msg game
+        logger |> info $"Update results: {results}"
         updateGame game
         List.iter (fun r -> enqueueResult r game) results
 
-open Giraffe
+    let joinGame (ctx: HttpContext) : GameInfo =
+        if join.Count = 0 then
+            // No waiting players
+            let gid = System.Guid.NewGuid()
+            join.Enqueue(gid)
+            // Create message queues
+            player1Results.Add(gid, Queue())
+            player2Results.Add(gid, Queue())
+            logger ctx |> info $"New Game [{gid}] in join list"
+            { id=gid.ToString(); player=PlayerDto.Player1 }
+        else
+            // Create game for joined players
+            let gid = join.Dequeue()
+            let results, game = Game.newGame gid
+            updateGame game
+            List.iter (fun r -> enqueueResult r game) results
+            logger ctx |> info $"New Game [{gid}] created"
+            { id=gid.ToString(); player=PlayerDto.Player2 }
+
+
 
 let createGameApi (ctx: HttpContext) =
     { start =
-        fun () ->
-            async {
-                let results, game = Game.newGame ()
-                Storage.createGame game
-                List.iter (fun r -> Storage.enqueueResult r game) results
-                // See: https://stackoverflow.com/a/51255169/12347616
-                ctx.GetLogger<IGameApi>()
-                |> fun l -> l.LogInformation($"New Game [{game.id}] initialized")
-                return (game.id.ToString(), PlayerDto.Player1)
-            }
+        fun () -> async { return GameCoordinator.joinGame ctx }
 
       poll =
           fun (id: string) (player: PlayerDto) ->
               async {
                   let id = System.Guid.Parse(id)
-                  return Storage.dequeResult player id
+                  return GameCoordinator.dequeResult player id ctx
               }
 
       update =
           fun (id: string) (player: PlayerDto) (msg: IMessage) ->
               async {
                   let id = System.Guid.Parse(id)
-                  ctx.GetLogger<IGameApi>()
-                  |> fun l -> l.LogInformation($"Update {msg}")
-                  return Storage.processMessage player id msg
+                  return GameCoordinator.processMessage player id msg ctx
               } }
 
 // See: https://github.com/Zaid-Ajaj/Fable.Remoting/blob/master/documentation/src/dependency-injection.md

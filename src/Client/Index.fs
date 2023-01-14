@@ -169,14 +169,14 @@ let GameUI: GameUIStatic = jsNative
 
 // See: https://github.com/fable-compiler/Fable/issues/2115
 
-type GameInfo = { id: string; player: PlayerDto }
+// type GameInfo = { id: string; player: PlayerDto }
 
 
 
 let init () : Promise<GameInfo> =
     async {
-        let! id, player = todosApi.start ()
-        return { id = id; player = player }
+        return! todosApi.start ()
+        //return { id = id; player = player }
     }
     |> Async.StartAsPromise
 

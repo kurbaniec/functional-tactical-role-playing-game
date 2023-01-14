@@ -267,6 +267,7 @@ class GameUI {
     /** @param {DomainDto_PlayerWinResult} result **/
     onPlayerWinResult(result) {
         this.removeHighlight()
+        this.isPolling = false
         if (this.gameInfo.player === result.player) {
             alert("You WIN")
         } else {
@@ -420,7 +421,13 @@ class GameUI {
         /** @type {GameInfo} */
         const gameInfo = await init();
         /** @type {DomainDto_IResult} */
-        const startInfoUnion = await pollServer(gameInfo);
+        let startInfoUnion = null;
+        while (true) {
+            startInfoUnion = await pollServer(gameInfo);
+            if (startInfoUnion) break
+            await new Promise(resolve => setTimeout(resolve, 100));
+            console.log("Waiting for other players")
+        }
         /** @type {DomainDto_StartResult} */
         const startInfo = unwrap(startInfoUnion)
         if (startInfo.constructor.name !== "DomainDto_StartResult")

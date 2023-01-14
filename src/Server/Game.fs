@@ -2,8 +2,7 @@
 
 open GameState
 
-let newGame (_: unit) : List<GameResult> * Game =
-    let gid = System.Guid.NewGuid()
+let newGame (gid: System.Guid) : List<GameResult> * Game =
     let board = Board.create (Row 5) (Col 5)
 
     let playerPos = (Row 0, Col 0)

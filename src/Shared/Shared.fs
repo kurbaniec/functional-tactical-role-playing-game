@@ -125,7 +125,12 @@ module DomainDto =
 
 open DomainDto
 
+type GameInfo = {
+    id: string
+    player: PlayerDto
+}
+
 type IGameApi =
-    { start: unit -> Async<string * PlayerDto>
+    { start: unit -> Async<GameInfo>
       poll: string -> PlayerDto -> Async<Option<IResult>>
       update: string -> PlayerDto -> IMessage -> Async<unit> }
