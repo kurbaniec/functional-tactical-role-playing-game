@@ -27,7 +27,7 @@ import {Input, InputManager} from "./components/InputManager"
 import {Cursor} from "./components/Cursor"
 import {Selector} from "./components/Selector"
 import {Character} from "./components/Character"
-import {sendStartedMsg} from "./components/Sub";
+import {sendCharacterMsg, sendStartedMsg} from "./components/Sub";
 
 class GameUI {
 
@@ -174,7 +174,7 @@ class GameUI {
 
     async poll() {
         while (this.isPolling) {
-            await new Promise(resolve => setTimeout(resolve, 250));
+            await new Promise(resolve => setTimeout(resolve, 175));
             /** @type {DomainDto_IResult} */
             const result = await pollServer(this.gameInfo)
             if (result) this.onResult(unwrap(result))
@@ -237,7 +237,8 @@ class GameUI {
         if (!c) return;
         // See: https://stackoverflow.com/a/16862775
         const canvas = document.getElementById("info-canvas")
-        canvas.textContent = JSON.stringify(c.model, undefined, 2)
+        sendCharacterMsg(c.model)
+        // canvas.textContent = JSON.stringify(c.model, undefined, 2)
     }
 
     /**
@@ -272,7 +273,7 @@ class GameUI {
         while (true) {
             startInfoUnion = await pollServer(gameInfo);
             if (startInfoUnion) break
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(resolve => setTimeout(resolve, 1000));
             console.log("Waiting for other players")
         }
         /** @type {DomainDto_StartResult} */

@@ -10,32 +10,36 @@
 </head>
 <body>
     <div id="elmish-app" class="app"></div>
-    <div class="row">
+    <!--<div class="row">-->
         <!--<canvas id="map-canvas" class="map-canvas"></canvas>-->
         <!--<canvas id="info-canvas" class="info-canvas"></canvas>-->
-        <pre class="info-canvas"><code id="info-canvas"></code></pre>
-    </div>
+        <!--<pre class="test"><code id="info-canvas"></code></pre>-->
+    <!--</div>-->
 </body>
 <style>
     /* See https://www.html5gamedevs.com/topic/41499-how-to-change-babylonjss-default-canvas-size/# */
     .app {
-        width: 100%;
-        height: 100%;
+        width: 100% !important;
+        height: 100% !important;
         margin: 0;
         padding: 0;
     }
 
     .row {
-        display: flex;
-        height: 80%;
+        display: flex !important;
+        height: 80vh !important;
     }
 
     .map-canvas {
-        width: 65%;
+        width: 65% !important;
     }
 
     .info-canvas {
         width: 35% !important;
+    }
+
+    .test {
+        height: 2% !important;
     }
 </style>
 </html>

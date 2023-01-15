@@ -5,6 +5,7 @@ open Elmish
 open Fable.Core
 open Fable.Core.JS
 open Fable.Remoting.Client
+open Fulma
 open Shared
 open Shared.DomainDto
 
@@ -131,18 +132,17 @@ open Feliz.Bulma
 open Fable.React
 open Fable.React.Props
 
-type ActionPreview = {
-    name: string
-    before: CharacterDto
-    after: CharacterDto
-}
+type ActionPreview =
+    { name: string
+      before: CharacterDto
+      after: CharacterDto }
 
 type UI =
     | Waiting
     | Started
     | Character of CharacterDto
     | Action of ActionPreview
-    // | Win
+// | Win
 
 type Msg =
     | Started
@@ -170,47 +170,105 @@ type CustomEvent =
 // See: https://stackoverflow.com/a/61808412/12347616
 let uiSub initial =
     let sub dispatch =
-        window.addEventListener ("uiSub", fun (event: Event) ->
-            event :?> CustomEvent |> fun e -> e.detail |> dispatch
+        window.addEventListener (
+            "uiSub",
+            fun (event: Event) -> event :?> CustomEvent |> fun e -> e.detail |> dispatch
         )
+
     Cmd.ofSub sub
 
 let waitingView () =
-    div [ Class "hero-body" ] [
-        p [Class "title"] [ str "Waiting for other player" ]
-        p [Class "subtitle"] [ str "This can take a while..." ]
+    section [ Id "map-info"; Class "info-canvas hero is-info" ] [
+        div [ Class "hero-body" ] [
+            p [ Class "title" ] [
+                str "Waiting for other player"
+            ]
+            p [ Class "subtitle" ] [
+                str "This can take a while..."
+            ]
+        ]
     ]
 
 let startedView () =
-    div [ Class "hero-body" ] [
-        p [Class "title"] [ str "Joined Game" ]
-        p [Class "subtitle"] [ str "🕹️" ]
+    section [ Id "map-info"; Class "info-canvas hero is-info" ] [
+        div [ Class "hero-body" ] [
+            p [ Class "title" ] [
+                str "Joined Game"
+            ]
+            p [ Class "subtitle" ] [ str "🕹️" ]
+        ]
+    ]
+
+let clsToEmoji (cls: CharacterClassDto) =
+    match cls with
+    | CharacterClassDto.Axe -> "🪓"
+    | CharacterClassDto.Sword -> "⚔️"
+    | CharacterClassDto.Lance -> "🔱"
+    | CharacterClassDto.Bow -> "🏹"
+    | CharacterClassDto.Support -> "🪄"
+    | _ -> "⁉️"
+
+let boldStr text =
+    Text.span [ Modifiers [ Modifier.TextWeight TextWeight.Bold ] ] [ str text ]
+
+let propertiesToElement (properties: Dictionary<string, System.Object>) =
+    let hp = p [] [ boldStr $"""HP:  {properties[ "hp" ] } / {properties[ "maxHp" ]}""" ]
+    let atk = p [] [ boldStr $"""ATK: {properties[ "atk" ] } """ ]
+    let def = p [] [ boldStr $"""DEF: {properties[ "def" ] } """ ]
+    if properties.ContainsKey "heal" then
+        let heal = p [] [ boldStr $"""HEAL: {properties[ "heal" ] } """ ]
+        div [] [ hp; atk; heal; def ]
+    else
+        div [] [ hp; atk; def ]
+
+
+
+let characterView (character: CharacterDto) =
+    let heroCls =
+        if character.player.Value = PlayerDto.Player1 then
+            "is-success"
+        else
+            "is-danger"
+    let title = $"{clsToEmoji character.classification} {character.name}"
+
+    let properties = propertiesToElement character.properties
+
+    section [ Id "map-info"; Class $"info-canvas hero {heroCls}" ] [
+        div [ Class "hero-body" ] [
+            p [ Class "title" ] [
+                str title
+            ]
+            properties
+        ]
     ]
 
 let mock () =
-    div [ Class "hero-body" ] [
-        p [Class "title"] [ str "Not implemented" ]
-        p [Class "subtitle"] [ str "🕹️" ]
+    section [ Id "map-info"; Class "info-canvas hero is-info" ] [
+        div [ Class "hero-body" ] [
+            p [ Class "title" ] [
+                str "Not implemented"
+            ]
+            p [ Class "subtitle" ] [ str "🕹️" ]
+        ]
     ]
 
 let view (model: UI) (dispatch: Msg -> unit) =
     div [] [
-        Bulma.navbar [  prop.children [] ]
-        div [ Class "row" ]
-            [
-              canvas [ Id "map-canvas"; Class "map-canvas"] []
-              section [ Id "map-info"; Class "info-canvas hero is-success" ]  [
-                match model with
-                | UI.Waiting -> waitingView ()
-                | UI.Started -> startedView ()
-                | UI.Character character -> mock ()
-                | UI.Action character -> mock ()
-              ]
-            ]
+        Bulma.navbar [ prop.children [] ]
+        div [ Class "row" ] [
+            canvas [ Id "map-canvas"; Class "map-canvas" ] []
+
+            match model with
+            | UI.Waiting -> waitingView ()
+            | UI.Started -> startedView ()
+            | UI.Character character -> characterView character
+            | UI.Action character -> mock ()
+        ]
+
     ]
 
 module Msg =
-    let startedMsg() = Msg.Started
+    let startedMsg () = Msg.Started
     let characterMsg (character: CharacterDto) = Msg.Character character
     let actionMsg (preview: ActionPreview) = Msg.Action preview
 
@@ -272,7 +330,7 @@ let gameApi =
 let init () : Promise<GameInfo> =
     async {
         return! gameApi.start ()
-        //return { id = id; player = player }
+    //return { id = id; player = player }
     }
     |> Async.StartAsPromise
 
