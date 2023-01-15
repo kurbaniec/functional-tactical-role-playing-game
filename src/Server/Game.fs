@@ -111,9 +111,9 @@ let update (player: Player) (msg: GameMessage) (game: Game) : List<GameResult> *
     else
         let state = game |> state
         match game |> phase with
-        | PlayerOverseePhase -> PlayerOverseePhase.update msg state
-        | PlayerMovePhase phase -> PlayerMoveState.update msg state phase
-        | PlayerActionSelectPhase phase -> PlayerActionSelectPhase.update msg state phase
-        | PlayerActionPhase phase -> PlayerActionPhase.update msg state phase
+        | PlayerOverseePhase -> GamePhase.PlayerOverseePhase.update msg state
+        | PlayerMovePhase phase -> GamePhase.PlayerMovePhase.update msg state phase
+        | PlayerActionSelectPhase phase -> GamePhase.PlayerActionSelectPhase.update msg state phase
+        | PlayerActionPhase phase -> GamePhase.PlayerActionPhase.update msg state phase
         | PlayerWinPhase -> state |> GameState.toEmptyUpdate // TODO: Send game already ended message
         |> fun (r, s) -> (r, { game with state = s })

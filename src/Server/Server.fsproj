@@ -16,6 +16,7 @@
     <Compile Include="Movement.fs" />
     <Compile Include="Board.fs" />
     <Compile Include="GameState.fs" />
+    <Compile Include="GamePhase.fs" />
     <Compile Include="Game.fs" />
     <Compile Include="GameResult.fs" />
     <Compile Include="GameMessage.fs" />
