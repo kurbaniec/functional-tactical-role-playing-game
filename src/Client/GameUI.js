@@ -27,7 +27,7 @@ import {Input, InputManager} from "./components/InputManager"
 import {Cursor} from "./components/Cursor"
 import {Selector} from "./components/Selector"
 import {Character} from "./components/Character"
-import {sendCharacterMsg, sendStartedMsg} from "./components/Sub";
+import {sendActionMsg, sendCharacterMsg, sendStartedMsg, sendWinMsg} from "./components/Subscription";
 
 class GameUI {
 
@@ -38,19 +38,19 @@ class GameUI {
         this.selection.clear();
         if (!this.myTurn()) return;
         this.highlightCharacters(result.selectableCharacters)
+        this.showCharacterInfo(this.cursor.positionDto)
+
         this.gameState.update = (input) => {
             if (input === Input.Enter) {
-                const c = this.findCharacter(this.cursor.positionDto)
-                console.log("oversee-c", c)
-                if (!c) return;
+                const character = this.findCharacter(this.cursor.positionDto)
+                if (!character) return;
                 updateServer(new DomainDto_IMessage(
-                0, [c.id]
+                0, [character.id]
                 ), this.gameInfo)
-
             } else {
                 this.cursor.moveCursor(input)
-                this.showCharacterInfo(this.cursor.positionDto)
             }
+            this.showCharacterInfo(this.cursor.positionDto)
         }
     }
 
@@ -58,13 +58,13 @@ class GameUI {
     onPlayerMoveSelectionResult(result) {
         this.removeHighlight();
         this.highlightPositions(result.availableMoves)
+
         this.gameState.update = (input) => {
             if (input === Input.Enter) {
                 const pos = this.cursor.positionDto
                 updateServer(new DomainDto_IMessage(
                     2, pos
                 ), this.gameInfo)
-
             } if (input === Input.Escape) {
                 updateServer(new DomainDto_IMessage(1), this.gameInfo)
             } else {
@@ -78,6 +78,7 @@ class GameUI {
     onPlayerActionSelectionResult(result) {
         this.removeHighlight()
         this.selection.setSelections(result.availableActions)
+
         this.gameState.update = (input) => {
             if (input === Input.Enter) {
                 const selection = this.selection.currentSelection()
@@ -94,20 +95,32 @@ class GameUI {
     onPlayerActionResult(result) {
         this.selection.clear()
         this.highlightCharacters(result.selectableCharacters)
+        /** @type {Map<string, DomainDto_CharacterDto>} */
+        const preview = result.preview
+
+        // TODO: preview action without cursor movement
+
         this.gameState.update = (input) => {
             if (input === Input.Enter) {
-                const c = this.findCharacter(this.cursor.positionDto)
-                if (!c) return;
+                const character = this.findCharacter(this.cursor.positionDto)
+                if (!character) return;
                 updateServer(new DomainDto_IMessage(
-                    5, [c.id]
+                    5, [character.id]
                 ), this.gameInfo)
-
             } if (input === Input.Escape) {
                 updateServer(new DomainDto_IMessage(4), this.gameInfo)
-            }  else {
+            } else {
                 this.cursor.moveCursor(input)
+                const characterBeforeAction = this.findCharacter(this.cursor.positionDto)
+                if (!characterBeforeAction) return;
+                if (preview && preview.results.has(characterBeforeAction.id)) {
+                    const actionName = preview.name
+                    const characterAfterAction = preview.results.get(characterBeforeAction.id)
+                    sendActionMsg(actionName, characterBeforeAction.model, characterAfterAction)
+                } else {
+                    this.showCharacterInfo(this.cursor.positionDto)
+                }
             }
-            this.showCharacterInfo(this.cursor.positionDto)
         }
     }
 
@@ -115,11 +128,7 @@ class GameUI {
     onPlayerWinResult(result) {
         this.removeHighlight()
         this.isPolling = false
-        if (this.gameInfo.player === result.player) {
-            alert("You WIN")
-        } else {
-            alert("You LOSE")
-        }
+        sendWinMsg(this.gameInfo.player, result.player)
         this.gameState.update = (input) => {
             console.log("Game already ended!")
         }

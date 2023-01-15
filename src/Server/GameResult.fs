@@ -53,6 +53,12 @@ let intoClsDto (cls: CharacterClass) : CharacterClassDto =
     | Bow -> CharacterClassDto.Bow
     | Support -> CharacterClassDto.Support
 
+let intoMoveTypeDto (moveType: MovementType) : MoveTypeDto =
+    match moveType with
+    | Foot -> MoveTypeDto.Foot
+    | Mount -> MoveTypeDto.Mount
+    | Fly -> MoveTypeDto.Fly
+
 let intoPlayerDto (player: Player) : PlayerDto =
     match player with
     | Player1 -> PlayerDto.Player1
@@ -71,10 +77,15 @@ let intoCharacterDto (c: Character) (b: Option<Board>) (p: Option<Player>) : Cha
         |> Dictionary.add "hp" (c |> Character.hp :> obj)
         |> Dictionary.add "maxHp" (c |> Character.maxHp :> obj)
         |> Dictionary.add "def" (c |> Character.def :> obj)
+        |> Dictionary.add "mv" (c.movement.distance |> Movement.Distance.value :> obj)
+        |> Dictionary.add "mvType" (c.movement.kind |> intoMoveTypeDto :> obj)
         |> fun dict ->
             let heal = c |> Character.heal
-            if heal > 0 then  dict |> Dictionary.add "heal" heal
-            else dict
+
+            if heal > 0 then
+                dict |> Dictionary.add "heal" heal
+            else
+                dict
 
     let position =
         match b with
@@ -162,6 +173,9 @@ let intoPlayerActionDto (state: GameState) (phase: PlayerAction) =
             characters
             |> List.map (fun (cid, c) -> (cid.ToString(), intoCharacterDto c None None)))
         |> Option.map (fun charactersDto -> charactersDto |> Dictionary.ofList)
+        |> Option.map (fun charactersDto ->
+            { name = selectableAction.action.name
+              results = charactersDto })
 
     PlayerActionResult
         { selectableCharacters = selectableCharacters

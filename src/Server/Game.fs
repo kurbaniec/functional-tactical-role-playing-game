@@ -47,7 +47,7 @@ let newGame (gid: System.Guid) : List<GameResult> * Game =
           kind = Heal }
 
     let healActions = heal :: actions
-    let healerStats = { character.stats with heal = 3 }
+    let healerStats = { character.stats with heal = 3; cls = CharacterClass.Support }
 
     let healer =
         { character with

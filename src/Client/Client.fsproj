@@ -18,7 +18,7 @@
       <Content Include="components\Selector.js" />
       <Content Include="components\InputManager.js" />
       <Content Include="components\Character.js" />
-      <Content Include="components\Sub.js" />
+      <Content Include="components\Subscription.js" />
       <Content Include="GameUI.js" />
       <Content Include="Scene.js" />
       <Content Include="output\Index.js" />

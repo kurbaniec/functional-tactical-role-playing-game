@@ -1,4 +1,4 @@
-﻿import {ActionPreview, MsgModule_actionMsg, MsgModule_characterMsg, MsgModule_startedMsg}
+﻿import {ActionPreview, MsgModule_actionMsg, MsgModule_characterMsg, MsgModule_startedMsg, MsgModule_winMsg}
     from "../output/Index";
 
 export function sendStartedMsg() {
@@ -24,6 +24,17 @@ export function sendActionMsg(actionName, before, after) {
     const e = new CustomEvent("uiSub", { detail: MsgModule_actionMsg(actionPreview) })
     window.dispatchEvent(e)
 }
+
+/**
+ * @param {number} player
+ * @param {number} winner
+ */
+export function sendWinMsg(player, winner) {
+    const e = new CustomEvent("uiSub", { detail: MsgModule_winMsg(player, winner) })
+    window.dispatchEvent(e)
+}
+
+
 
 
 

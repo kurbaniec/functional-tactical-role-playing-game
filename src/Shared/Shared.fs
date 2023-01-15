@@ -44,6 +44,11 @@ module DomainDto =
         | Bow = 3
         | Support = 4
 
+    type MoveTypeDto =
+        | Foot = 0
+        | Mount = 1
+        | Fly = 2
+
     type PositionDto = { row: int; col: int }
 
     type PlayerDto =
@@ -97,9 +102,14 @@ module DomainDto =
         availableActions: ResizeArray<SelectableActionDto>
     }
 
+    type ActionPreviewDto = {
+        name: string
+        results: Dictionary<CharacterIdDto, CharacterDto>
+    }
+
     type PlayerActionResult = {
         selectableCharacters: ResizeArray<CharacterIdDto>
-        preview: option<Dictionary<CharacterIdDto, CharacterDto>>
+        preview: option<ActionPreviewDto>
     }
 
     type CharacterDefeatResult = {
