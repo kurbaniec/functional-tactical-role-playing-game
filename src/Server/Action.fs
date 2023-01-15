@@ -1,8 +1,11 @@
 ﻿module Action
 
 
-type OtherCharacterAfterAttack = Character
-type ActionResult = Option<OtherCharacterAfterAttack>
+type OtherCharacterAfterAction = Character
+type ActionResult = Option<OtherCharacterAfterAction>
+
+module ActionValue =
+    let value (ActionValue v) = v
 
 module Attack =
     type WeaponTriangle =

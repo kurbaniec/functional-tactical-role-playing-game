@@ -1,6 +1,5 @@
 ﻿namespace Utils
 
-
 module Map =
     // See: https://stackoverflow.com/a/3974842
     let join (p: Map<'a, 'b>) (q: Map<'a, 'b>) =

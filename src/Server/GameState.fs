@@ -126,7 +126,7 @@ module PlayerOverseePhase =
 module PlayerMoveState =
     let deselectCharacter (p: Player) (state: GameState) : GameStateUpdate = state |> GameState.toPreviousState
 
-    let moveCharacter (player: Player) (pos: CellPosition) (state: GameState) (phase: PlayerMove) : GameStateUpdate =
+    let moveCharacter (player: Player) (pos: Position) (state: GameState) (phase: PlayerMove) : GameStateUpdate =
         if not <| List.contains pos phase.availableMoves then
             state |> GameState.toEmptyUpdate
         else
@@ -170,7 +170,8 @@ module PlayerMoveState =
                             | false ->
                                 Some
                                 <| { action = action
-                                     selectableCharacters = cids })
+                                     selectableCharacters = cids
+                                     preview = None })
                 |> List.choose id
 
             let msg =

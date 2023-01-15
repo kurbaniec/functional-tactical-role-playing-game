@@ -8,8 +8,12 @@
     <None Include="paket.references" />
     <Compile Include="Utils.fs" />
     <Compile Include="Domain.fs" />
-    <Compile Include="Movement.fs" />
+    <Compile Include="Player.fs" />
+    <Compile Include="Character.fs" />
     <Compile Include="Action.fs" />
+    <Compile Include="Tile.fs" />
+    <Compile Include="Position.fs" />
+    <Compile Include="Movement.fs" />
     <Compile Include="Board.fs" />
     <Compile Include="GameState.fs" />
     <Compile Include="Game.fs" />

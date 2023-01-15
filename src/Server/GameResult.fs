@@ -6,13 +6,25 @@ open Microsoft.FSharp.Core
 open Shared.DomainDto
 open FSharpx.Collections
 open Utils
+open Position
+
+let recipient (gr: GameResult) : Recipient =
+    match gr with
+    | Start _ -> AllRecipients
+    | PlayerOversee _ -> AllRecipients
+    | PlayerMoveSelection (p, _, _) -> PlayerRecipient p
+    | CharacterUpdate _ -> AllRecipients
+    | PlayerActionSelection (p, _) -> PlayerRecipient p
+    | PlayerAction (p, _) -> PlayerRecipient p
+    | CharacterDefeat _ -> AllRecipients
+    | PlayerWin _ -> AllRecipients
 
 let intoTileDto (tile: Tile) : TileDto =
     match tile with
     | Land _ -> TileDto.Land
     | Water _ -> TileDto.Water
 
-let intoPositionDto (pos: CellPosition) : PositionDto =
+let intoPositionDto (pos: Position) : PositionDto =
     let (row, col) = pos
 
     { row = Row.value row
@@ -120,7 +132,7 @@ let intoPlayerOverseeDto (game: GameState) =
 let intoPlayerMoveSelectionDto
     (player: Player)
     (cid: CharacterId)
-    (availableMoves: list<CellPosition>)
+    (availableMoves: list<Position>)
     (game: GameState)
     =
     PlayerMoveSelectionResult
@@ -137,7 +149,7 @@ let intoCharacterUpdateDto (cid: CharacterId) (game: GameState) =
 
     CharacterUpdateResult { character = character }
 
-let intoPlayerActionSelectionDto (p: Player) (actions: ApplicableActions) =
+let intoPlayerActionSelectionDto (p: Player) (actions: SelectableActions) =
     PlayerActionSelectionResult { availableActions = actions |> List.map (fun a -> a.action.name) |> ResizeArray }
 
 let intoPlayerActionDto (player: Player) (cids: list<CharacterId>) =

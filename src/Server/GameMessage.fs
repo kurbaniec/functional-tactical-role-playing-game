@@ -7,7 +7,7 @@ let fromPlayerDto (p: PlayerDto): Player =
     | PlayerDto.Player1 -> Player.Player1
     | PlayerDto.Player2 -> Player.Player2
 
-let fromPositionDto (pos: PositionDto): CellPosition =
+let fromPositionDto (pos: PositionDto): Position =
     (Row pos.row, Col pos.col)
 
 let fromSelectCharacterDto (p: Player) (c: string): GameMessage =

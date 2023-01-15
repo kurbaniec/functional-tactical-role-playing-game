@@ -1,7 +1,6 @@
 module Server
 
 open System.Collections.Generic
-open Domain.GameResult
 open Fable.Remoting.Server
 open Fable.Remoting.Giraffe
 open Microsoft.AspNetCore.Http
@@ -70,10 +69,11 @@ module GameCoordinator =
         if join.Count = 0 then
             // No waiting players
             let gid = System.Guid.NewGuid()
-            join.Enqueue(gid)
             // Create message queues
             player1Results.Add(gid, Queue())
             player2Results.Add(gid, Queue())
+            // Create wait list
+            join.Enqueue(gid)
             logger ctx |> info $"New Game [{gid}] in join list"
             { id=gid.ToString(); player=PlayerDto.Player1 }
         else

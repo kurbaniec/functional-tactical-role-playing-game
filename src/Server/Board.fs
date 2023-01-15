@@ -1,11 +1,9 @@
 ﻿module Board
 
-open System
-open System.Collections.Generic
+open Movement
+open Position
 
-
-
-let placeCharacter (pos: CellPosition) (c: CharacterId) (board: Board) : Board =
+let placeCharacter (pos: Position) (c: CharacterId) (board: Board) : Board =
     let (row, col) = pos
     let colMap = board[row]
     let existingTile = colMap[col]
@@ -20,7 +18,7 @@ let placeCharacter (pos: CellPosition) (c: CharacterId) (board: Board) : Board =
     let newBoard = board.Add(row, newColMap)
     newBoard
 
-let findCharacter (c: CharacterId) (board: Board) : CellPosition =
+let findCharacter (c: CharacterId) (board: Board) : Position =
     board
     |> Map.pick (fun row colMap ->
         colMap
@@ -29,7 +27,7 @@ let findCharacter (c: CharacterId) (board: Board) : CellPosition =
             | Some cid -> if cid = c then Some(row, col) else None
             | None -> None))
 
-let containsPosition (pos: CellPosition) (b: Board) : bool =
+let containsPosition (pos: Position) (b: Board) : bool =
     let (row, col) = pos
 
     b
@@ -37,15 +35,15 @@ let containsPosition (pos: CellPosition) (b: Board) : bool =
     |> Option.map (Map.containsKey col)
     |> Option.defaultValue false
 
-let tryFindTile (pos: CellPosition) (b: Board) : Option<Tile> =
+let tryFindTile (pos: Position) (b: Board) : Option<Tile> =
     let (row, col) = pos
     b |> Map.tryFind row |> Option.map (Map.tryFind col) |> Option.flatten
 
-let findTile (pos: CellPosition) (b: Board) : Tile =
+let findTile (pos: Position) (b: Board) : Tile =
     let (row, col) = pos
     b |> Map.find row |> Map.find col
 
-let private updateTile (tile: Tile) (pos: CellPosition) (b: Board) : Board =
+let private updateTile (tile: Tile) (pos: Position) (b: Board) : Board =
     let (row, col) = pos
 
     b
@@ -61,7 +59,7 @@ let private updateTile (tile: Tile) (pos: CellPosition) (b: Board) : Board =
             |> Some)
 
 
-let moveCharacter (cid: CharacterId) (target: CellPosition) (board: Board) : Board =
+let moveCharacter (cid: CharacterId) (target: Position) (board: Board) : Board =
     let from = findCharacter cid board
     let fromTile = findTile from board |> Tile.leave
     let targetTile = findTile target board |> Tile.occupy cid
@@ -72,7 +70,7 @@ let removeCharacter (c: CharacterId) (board: Board) : Board =
     let tile = board |> findTile pos |> Tile.leave
     board |> updateTile tile pos
 
-let findNeighbors (pos: CellPosition) (b: Board) : list<CellPosition * Tile> =
+let findNeighbors (pos: Position) (b: Board) : list<Position * Tile> =
     // let row, col = pos
 
     let newPos =
@@ -82,14 +80,14 @@ let findNeighbors (pos: CellPosition) (b: Board) : list<CellPosition * Tile> =
           (Row 1, Col 0, pos) ] // Right
 
     newPos
-    |> List.map (fun pos -> pos |||> CellPosition.add)
+    |> List.map (fun pos -> pos |||> Position.add)
     |> List.filter (fun pos -> containsPosition pos b)
     |> List.map (fun pos -> (pos, (findTile pos b)))
 
-type Frontier = list<CellPosition>
+type Frontier = list<Position>
 type FoundTile = { tile: Tile; distance: int }
-type FoundTiles = Map<CellPosition, FoundTile>
-type Neighbors = list<CellPosition * Tile>
+type FoundTiles = Map<Position, FoundTile>
+type Neighbors = list<Position * Tile>
 
 module FoundTiles =
     let tiles (ft: FoundTiles) : list<Tile> =
@@ -145,7 +143,7 @@ let rec doPathfinding
             doPathfinding frontier foundTiles maxDistance predicate b
 
 let pathfinding
-    (start: CellPosition)
+    (start: Position)
     (maxDistance: int)
     (predicate: Tile -> bool)
     (extract: (FoundTiles) -> 'U)
@@ -157,19 +155,19 @@ let pathfinding
 
     doPathfinding frontier foundTiles maxDistance predicate b |> extract
 
-let availablePlayerMoves (character: Character) (board: Board) : list<CellPosition> =
+let availablePlayerMoves (character: Character) (board: Board) : list<Position> =
     let cid = character |> Character.id
     let startPos = findCharacter cid board
     let movement = character |> Character.movement
     let distance = movement.distance |> Distance.value
     let predicate = Movement.createMovementPredicate character
     // See: https://devonburriss.me/converting-fsharp-csharp/
-    let extract (found: FoundTiles) : list<CellPosition> =
+    let extract (found: FoundTiles) : list<Position> =
         found |> Map.keys :> seq<_> |> Seq.toList
 
     pathfinding startPos distance predicate extract board
 
-let find (startPos: CellPosition) (d: Distance) (predicate: Tile -> bool) (extract: FoundTiles -> 'U) (b: Board) : 'U =
+let find (startPos: Position) (d: Distance) (predicate: Tile -> bool) (extract: FoundTiles -> 'U) (b: Board) : 'U =
     let d = d |> Distance.value
 
     pathfinding startPos d predicate extract b
