@@ -1,6 +1,6 @@
 ﻿// See: https://github.com/fable-compiler/fable3-samples/blob/main/interopFableFromJS/src/index.js
-import {GameInfo, init, pollServer, updateServer} from "./output/Index.js"
-import {DomainDto_CharacterDto, DomainDto_IMessage, DomainDto_IResult} from "./output/Shared/Shared";
+import {init, pollServer, updateServer} from "./output/Index"
+import {GameInfo, DomainDto_CharacterDto, DomainDto_IMessage, DomainDto_IResult} from "./output/Shared/Shared";
 import {
     boardPosToVec3,
     eachRecursive, modulo,
@@ -23,166 +23,10 @@ import {
     SubMesh,
     Vector3
 } from "@babylonjs/core";
-import {Input, InputManager} from "./InputManager"
-import {AdvancedDynamicTexture, InputText, StackPanel, TextBlock} from "@babylonjs/gui";
-
-
-class Cursor {
-
-
-    constructor(start, scene) {
-        const mesh = MeshBuilder.CreateBox("cursor", {depth: 1, width: 1, height: 0.2}, scene);
-        mesh.position = start
-        const cursorMaterial = new StandardMaterial("cursormat", scene);
-        cursorMaterial.diffuseColor = Color3.Red();
-        // cursorMaterial.emissiveColor = new Color3(0.1, 0.1, 0.1);
-        cursorMaterial.alpha = 0.7;
-        mesh.material = cursorMaterial;
-        // cursorMaterial.needDepthPrePass = false
-        // Render later than other transparent meshes
-        // See: https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering
-        mesh.renderingGroupId = 1
-        mesh.alphaIndex = 1
-        this.mesh = mesh
-    }
-
-    /** @param {string} input **/
-    moveCursor(input) {
-        if (input === Input.Up)
-            this.mesh.position.addInPlace(new Vector3(0, 0, 1))
-        else if (input === Input.Down)
-            this.mesh.position.addInPlace(new Vector3(0, 0, -1))
-        else if (input === Input.Left)
-            this.mesh.position.addInPlace(new Vector3(-1, 0, 0))
-        else if (input === Input.Right)
-            this.mesh.position.addInPlace(new Vector3(1, 0, 0))
-    }
-
-    get position() {
-        return this.mesh.position
-    }
-
-    get positionDto() {
-        return vec3ToPositionDto(this.mesh.position)
-    }
-
-    dispose() { this.mesh.dispose() }
-}
-
-class Character {
-
-    /**
-     * @param {DomainDto_CharacterDto} model
-     * @param {Scene} scene
-     */
-    constructor(model, scene) {
-        this.model = model
-        const mesh = MeshBuilder.CreateBox(this.model.id, {depth: 0.5, width: 0.5, height: 0.8}, scene);
-        mesh.position.y = 1.2 / 2
-        mesh.position.addInPlace(positionDtoToVec3(this.model.position))
-        const cursorMaterial = new StandardMaterial(`mat${this.model.id}`, scene);
-        if (this.model.player === Player.Player1)
-            cursorMaterial.diffuseColor = Color3.Blue();
-        else
-            cursorMaterial.diffuseColor = Color3.Green();
-        cursorMaterial.emissiveColor = new Color3(0.1, 0.1, 0.1);
-        cursorMaterial.alpha = 0.75;
-        mesh.material = cursorMaterial;
-        mesh.renderingGroupId = 0
-        mesh.alphaIndex = 0
-        this.mesh = mesh
-    }
-
-    /** @param {DomainDto_CharacterDto} model **/
-    updateModel(model) {
-        // console.log("model", JSON.stringify(model))
-        // console.log("before update model", JSON.stringify(this.model))
-        eachRecursive(this.model, model)
-        // console.log("after update model", JSON.stringify(this.model))
-        setVec3FromPositionDto(this.mesh.position, this.model.position)
-    }
-
-    get id() {
-        return this.model.id
-    }
-
-    get position() {
-        return this.mesh.position
-    }
-
-    get positionDto() {
-        return vec3ToPositionDto(this.mesh.position)
-    }
-
-    dispose() { this.mesh.dispose() }
-}
-
-class Selector {
-
-    /**
-     * @param {Array<string>} selections
-     */
-    constructor(selections) {
-        this.mesh = AdvancedDynamicTexture.CreateFullscreenUI("UI")
-        this.setSelections(selections)
-    }
-
-    /** @param {Array<string>} selections */
-    setSelections(selections) {
-        if (!selections || selections.length === 0) return
-        const panel = new StackPanel()
-        selections.forEach(s => {
-            // TODO: better way?
-            const ui = new InputText()
-            ui.width = "150px";
-            ui.maxWidth = 0.2;
-            ui.height = "40px";
-            ui.color = "white";
-            ui.background = "black";
-            ui.text = s
-            panel.addControl(ui)
-        })
-        this.panel = panel
-        this.mesh.addControl(this.panel)
-        this.length = panel.children.length
-        this.index = this.length-1
-        this.moveCursor(Input.Down)
-    }
-
-    clear() {
-        if (this.panel) this.mesh.removeControl(this.panel)
-    }
-
-    /** @param {string} input **/
-    moveCursor(input) {
-        const lastIndex = this.index
-        if (input === Input.Up) {
-            this.index = modulo((lastIndex - 1), this.length)
-        }
-        else if (input === Input.Down) {
-            this.index = modulo((lastIndex + 1), this.length)
-        }
-        this.removeHighlight(lastIndex)
-        this.highlight(this.index)
-    }
-
-    currentSelection() {
-        return this.panel.children[this.index].text
-    }
-
-    highlight(index) {
-        const ui = this.panel.children[index]
-        ui.background = "green";
-    }
-
-    removeHighlight(index) {
-        const ui = this.panel.children[index]
-        ui.background = "black";
-    }
-
-
-
-}
+import {Input, InputManager} from "./components/InputManager"
+import {Cursor} from "./components/Cursor"
+import {Selector} from "./components/Selector"
+import {Character} from "./components/Character"
 
 class GameUI {
 
@@ -534,6 +378,18 @@ class GameUI {
             engine: engine,
             scene: scene
         }
+
+
+        async function eventTest() {
+            while (true) {
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                const e = new CustomEvent("uiSub", { detail: "hey!"})
+                window.dispatchEvent(e)
+            }
+        }
+        const _ = eventTest()
+
+
 
         return new GameUI(gameInfo, gameState, characters, board, engineInfo)
     }

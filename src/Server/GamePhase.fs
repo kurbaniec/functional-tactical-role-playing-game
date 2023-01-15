@@ -1,7 +1,7 @@
 ﻿module GamePhase
 
-open Microsoft.AspNetCore.Mvc
 open Utils
+
 type GameStateUpdate = GameState.GameStateUpdate
 
 module PlayerOverseePhase =
@@ -24,7 +24,7 @@ module PlayerOverseePhase =
             printfn "Available moves"
             printfn $"%A{availableMoves}"
 
-            let result = PlayerMoveSelection(p, c.id, availableMoves)
+            let result = PlayerMoveSelection
 
             let phase =
                 PlayerMovePhase
@@ -99,7 +99,7 @@ module PlayerMovePhase =
             let msg =
                 [ CharacterUpdate(characterToMove.id)
                   // Send action state select message
-                  PlayerActionSelection(player, availableActions) ]
+                  PlayerActionSelection ]
 
             let state =
                 { state with
@@ -120,24 +120,29 @@ module PlayerMovePhase =
 
 module PlayerActionSelectPhase =
     let private precalculateAction
-        (selectableAction: SelectableAction) (thisCharacter: Character) (gameState: GameState) =
+        (selectableAction: SelectableAction)
+        (thisCharacter: Character)
+        (gameState: GameState)
+        =
 
-        List.map (fun otherCharacterId ->
-            let otherCharacter = gameState |> GameState.fromCharacterId otherCharacterId |> fst
-            Action.performAction thisCharacter otherCharacter selectableAction.action
-            |> function
-                | None -> None
-                | Some otherCharacterAfterAction -> Some (otherCharacterId, otherCharacterAfterAction)
-        ) selectableAction.selectableCharacters
+        List.map
+            (fun otherCharacterId ->
+                let otherCharacter = gameState |> GameState.fromCharacterId otherCharacterId |> fst
+
+                Action.performAction thisCharacter otherCharacter selectableAction.action
+                |> function
+                    | None -> None
+                    | Some otherCharacterAfterAction -> Some(otherCharacterId, otherCharacterAfterAction))
+            selectableAction.selectableCharacters
         |> List.choose id
         |> fun charactersAfterAction ->
-            if (charactersAfterAction |> List.isEmpty) then None
-            else charactersAfterAction |> Map.ofList |> Some
-        |> fun preview -> { selectableAction with preview=preview }
+            if (charactersAfterAction |> List.isEmpty) then
+                None
+            else
+                charactersAfterAction |> Map.ofList |> Some
+        |> fun preview -> { selectableAction with preview = preview }
 
-    let selectAction
-        (player: Player) (actionName: ActionName)
-        (state: GameState) (phase: PlayerActionSelect) =
+    let selectAction (player: Player) (actionName: ActionName) (state: GameState) (phase: PlayerActionSelect) =
 
         let selectableAction =
             phase.availableActions |> List.tryFind (fun a -> a.action.name = actionName)
@@ -147,14 +152,14 @@ module PlayerActionSelectPhase =
         | Some selectableAction ->
             let restoreState =
                 { state = state
-                  undoResults = [ PlayerActionSelection(player, phase.availableActions) ] }
+                  undoResults = [ PlayerActionSelection ] }
 
 
             // TODO: Send preview info when action is applied
             let selectableAction = precalculateAction selectableAction phase.character state
 
             // E.g. after attack enemy has xyz hp
-            let msg = [ PlayerAction(player, selectableAction.selectableCharacters) ]
+            let msg = [ PlayerAction ]
 
             let phase =
                 PlayerActionPhase
@@ -175,37 +180,29 @@ module PlayerActionSelectPhase =
         | _ -> state |> GameState.toEmptyUpdate
 
 module PlayerActionPhase =
-    let deselectAction (p: Player) (state: GameState) =
-        // let msg = [ PlayerActionSelection(p, state.availableActions) ]
-        //
-        // let state =
-        //     PlayerActionSelectPhase
-        //         { details = state.details
-        //           awaitingTurns = state.awaitingTurns
-        //           character = state.character
-        //           availableActions = state.availableActions }
-        //
-        // (msg, state)
-        state |> GameState.toPreviousState
+    let deselectAction (p: Player) (state: GameState) = state |> GameState.toPreviousState
 
     let performAction (player: Player) (cid: CharacterId) (state: GameState) (phase: PlayerAction) : GameStateUpdate =
         let thisCharacter = phase.character
         let selectableAction = phase.action
+        let actionPreview = selectableAction.preview
         let action = selectableAction.action
         let actionType = action.kind
 
         let oppositePlayer = player |> Player.opposite
 
         let validSelection (cid: CharacterId) =
-            if List.contains cid selectableAction.selectableCharacters then
+            if selectableAction.selectableCharacters |> List.contains cid then
                 Ok()
             else
                 Error()
 
-        let performAction () =
-            let otherCharacter = state |> GameState.fromCharacterId cid |> fst
-
-            Action.performAction thisCharacter otherCharacter action
+        let applyAction () =
+            // Return cached action result
+            // Empty result means that action does not affect any character
+            actionPreview
+            |> Option.map (fun characters -> characters |> Map.tryFind cid)
+            |> Option.flatten
 
         let actionWithoutChanges = state |> GameState.toEmptyUpdate
 
@@ -275,7 +272,7 @@ module PlayerActionPhase =
 
         cid
         |> validSelection
-        |> Result.map performAction
+        |> Result.map applyAction
         |> Result.map actionChooser
         |> Result.map stateCheck
         |> Result.defaultValue (state |> GameState.toEmptyUpdate)

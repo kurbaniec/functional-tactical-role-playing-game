@@ -14,9 +14,12 @@
         <ProjectReference Include="..\Shared\Shared.fsproj" />
     </ItemGroup>
     <ItemGroup>
+      <Content Include="components\Cursor.js" />
+      <Content Include="components\Selector.js" />
+      <Content Include="components\InputManager.js" />
+      <Content Include="components\Character.js" />
       <Content Include="GameUI.js" />
       <Content Include="Scene.js" />
-      <Content Include="InputManager.js" />
       <Content Include="output\Index.js" />
       <Content Include="output\Index.js.map" />
       <Content Include="output\Shared\Shared.js.map" />

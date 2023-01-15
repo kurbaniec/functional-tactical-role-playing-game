@@ -25,17 +25,17 @@ type ITodosApi =
 
 // Based on Enterprise Tic-Tac-Toe Talk @ 14.55 (https://vimeo.com/131196782)
 // Make UI life easier by explicitly returning changes with each move
-
-
+// ---
 // Use System collections for native js types
 // See: https://fable.io/docs/dotnet/compatibility.html
+type Dictionary<'K, 'V> = System.Collections.Generic.Dictionary<'K, 'V>
 module DomainDto =
 
     type TileDto =
         | Land = 0
         | Water = 1
 
-    type BoardDto = System.Collections.Generic.List<System.Collections.Generic.List<TileDto>>
+    type BoardDto = ResizeArray<ResizeArray<TileDto>>
 
     type CharacterClassDto =
         | Axe = 0
@@ -50,13 +50,15 @@ module DomainDto =
         | Player1 = 0
         | Player2 = 1
 
+    type CharacterIdDto = string
+
     type CharacterDto =
-        { id: string
+        { id: CharacterIdDto
           name: string
           classification: CharacterClassDto
           position: Option<PositionDto>
           player: Option<PlayerDto>
-          properties: System.Collections.Generic.Dictionary<string, Object> }
+          properties: Dictionary<string, Object> }
 
 
     type PlaceCharacterDto =
@@ -64,13 +66,14 @@ module DomainDto =
           character: CharacterDto
           pos: PositionDto }
 
+    type SelectableActionDto = string
     type IMessage =
-        | SelectCharacterDto of string
+        | SelectCharacterDto of CharacterIdDto
         | DeselectCharacterDto
         | MoveCharacterDto of PositionDto
-        | SelectActionDto of string
+        | SelectActionDto of SelectableActionDto
         | DeselectActionDto
-        | PerformActionDto of string
+        | PerformActionDto of CharacterIdDto
 
     type StartResult =
         { id: string
@@ -79,7 +82,7 @@ module DomainDto =
 
     type PlayerOverseeResult = {
         player: PlayerDto
-        selectableCharacters: ResizeArray<string>
+        selectableCharacters: ResizeArray<CharacterIdDto>
     }
 
     type PlayerMoveSelectionResult =
@@ -90,24 +93,17 @@ module DomainDto =
         character: CharacterDto
     }
 
-    // type SelectableActionDto = {
-    //     action: string
-    //     // applicableTo: ResizeArray<string>
-    // }
-    //
-    //
-    type SelectableActionDto = string
     type PlayerActionSelectionResult = {
         availableActions: ResizeArray<SelectableActionDto>
     }
 
     type PlayerActionResult = {
-        // TODO: alias for string characterIdDto
-        selectableCharacters: ResizeArray<string>
+        selectableCharacters: ResizeArray<CharacterIdDto>
+        preview: option<Dictionary<CharacterIdDto, CharacterDto>>
     }
 
     type CharacterDefeatResult = {
-        character: string
+        character: CharacterIdDto
     }
 
     type PlayerWinResult = {

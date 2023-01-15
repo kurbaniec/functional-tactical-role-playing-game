@@ -1,5 +1,6 @@
 module Index
 
+open Browser.Types
 open Elmish
 open Fable.Core
 open Fable.Core.JS
@@ -7,121 +8,170 @@ open Fable.Remoting.Client
 open Shared
 open Shared.DomainDto
 
-type Model = { Todos: Todo list; Input: string }
-
-type Msg =
-    | GotTodos of Todo list
-    | SetInput of string
-    | AddTodo
-    | AddedTodo of Todo
-    | Start of StartResult
-
-
-let kek =
-    let a = 2
-    ()
+// type Model = { Todos: Todo list; Input: string }
+//
+// type Msg =
+//     | GotTodos of Todo list
+//     | SetInput of string
+//     | AddTodo
+//     | AddedTodo of Todo
+//     | Start of StartResult
+//
+//
+// let kek =
+//     let a = 2
+//     ()
+//
+// let timer onTick =
+//     let start dispatch =
+//         let intervalId =
+//             JS.setInterval
+//                 (fun _ -> dispatch (onTick))
+//                 1000
+//         { new IDisposable with
+//             member _.Dispose() = JS.clearInterval intervalId }
+//     start
+//
+// let subscribe model =
+//     [ ["timer"], timer "Tick" ]
 
 open Fable.Core.JsInterop
 
-type IScene =
-    abstract createScene: unit -> unit
-    abstract triggerAlert: message: string -> unit
+// type IScene =
+//     abstract createScene: unit -> unit
+//     abstract triggerAlert: message: string -> unit
+//
+// [<ImportAll("./Scene.js")>]
+// let sceneJs: IScene = jsNative
+//
 
-[<ImportAll("./Scene.js")>]
-let sceneJs: IScene = jsNative
-
-let todosApi =
-    Remoting.createApi ()
-    |> Remoting.withRouteBuilder Route.builder
-    |> Remoting.buildProxy<IGameApi>
 
 // console.log ("here 3")
 
-let init2 () : Model * Cmd<Msg> =
-    let model = { Todos = []; Input = "" }
+// let init2 () : Model * Cmd<Msg> =
+//     let model = { Todos = []; Input = "" }
+//
+//     // console.log ("here")
+//     // printfn "here"
+//     // sceneJs.createScene ()
+//     // printfn "here"
+//     // console.log ("here")
+//
+//     // let cmd = Cmd.OfAsync.perform todosApi.getTodos () GotTodos
+//     let cmd = Cmd.none
+//     // let cmd = Cmd.OfAsync.perform todosApi.start () Start
+//
+//     model, cmd
 
-    // console.log ("here")
-    // printfn "here"
-    // sceneJs.createScene ()
-    // printfn "here"
-    // console.log ("here")
+// let update2 (msg: Msg) (model: Model) : Model * Cmd<Msg> =
+//     match msg with
+//     | Start startResult ->
+//         printfn $"%A{startResult}"
+//
+//         match startResult :> obj with
+//         | :? StartResult -> printfn ("| start result")
+//         | _ -> printfn "| kek"
+//
+//         model, Cmd.none
+//
+//     | GotTodos todos -> { model with Todos = todos }, Cmd.none
+//     | SetInput value -> { model with Input = value }, Cmd.none
+//     | AddTodo ->
+//         let todo = Todo.create model.Input
+//
+//         //let cmd = Cmd.OfAsync.perform todosApi.addTodo todo AddedTodo
+//
+//         // { model with Input = "" }, cmd
+//         { model with Input = "" }, Cmd.none
+//     | AddedTodo todo -> { model with Todos = model.Todos @ [ todo ] }, Cmd.none
 
-    // let cmd = Cmd.OfAsync.perform todosApi.getTodos () GotTodos
-    let cmd = Cmd.none
-    // let cmd = Cmd.OfAsync.perform todosApi.start () Start
 
-    model, cmd
 
-let update2 (msg: Msg) (model: Model) : Model * Cmd<Msg> =
-    match msg with
-    | Start startResult ->
-        printfn $"%A{startResult}"
-
-        match startResult :> obj with
-        | :? StartResult -> printfn ("| start result")
-        | _ -> printfn "| kek"
-
-        model, Cmd.none
-
-    | GotTodos todos -> { model with Todos = todos }, Cmd.none
-    | SetInput value -> { model with Input = value }, Cmd.none
-    | AddTodo ->
-        let todo = Todo.create model.Input
-
-        //let cmd = Cmd.OfAsync.perform todosApi.addTodo todo AddedTodo
-
-        // { model with Input = "" }, cmd
-        { model with Input = "" }, Cmd.none
-    | AddedTodo todo -> { model with Todos = model.Todos @ [ todo ] }, Cmd.none
+// let navBrand =
+//     Bulma.navbarBrand.div [
+//         Bulma.navbarItem.a [
+//             prop.href "https://safe-stack.github.io/"
+//             navbarItem.isActive
+//             prop.children [
+//                 Html.img [
+//                     prop.src "/favicon.png"
+//                     prop.alt "Logo"
+//                 ]
+//             ]
+//         ]
+//     ]
+//
+// let containerBox (model: Model) (dispatch: Msg -> unit) =
+//     Bulma.box [
+//         Bulma.content [
+//             Html.ol [
+//                 for todo in model.Todos do
+//                     Html.li [ prop.text todo.Description ]
+//             ]
+//         ]
+//         Bulma.field.div [
+//             field.isGrouped
+//             prop.children [
+//                 Bulma.control.p [
+//                     control.isExpanded
+//                     prop.children [
+//                         Bulma.input.text [
+//                             prop.value model.Input
+//                             prop.placeholder "What needs to be done?"
+//                             prop.onChange (fun x -> SetInput x |> dispatch)
+//                         ]
+//                     ]
+//                 ]
+//             ]
+//         ]
+//     ]
 
 open Feliz
 open Feliz.Bulma
+open Fable.React
+open Fable.React.Props
 
-let navBrand =
-    Bulma.navbarBrand.div [
-        Bulma.navbarItem.a [
-            prop.href "https://safe-stack.github.io/"
-            navbarItem.isActive
-            prop.children [
-                Html.img [
-                    prop.src "/favicon.png"
-                    prop.alt "Logo"
-                ]
+type UI = { text: string }
+
+type Msg =
+    | Text of string
+
+
+let appInit () : UI * Cmd<Msg> =
+    let model = { text= "hi" }
+    let cmd = Cmd.none
+
+    model, cmd
+
+let appUpdate (msg: Msg) (model: UI) : UI * Cmd<Msg> =
+    match msg with
+    | Text txt -> { model with text = txt }, Cmd.none
+
+open Browser
+
+let uiSub initial =
+    let sub dispatch =
+        window.addEventListener ("uiSub", fun event ->
+            JS.console.log("Hey")
+            JS.console.log("Event", event)
+            dispatch (Text event?detail)
+        )
+    Cmd.ofSub sub
+
+let view (model: UI) (dispatch: Msg -> unit) =
+    div [] [
+        Bulma.navbar [  prop.children [] ]
+        div [ Class "row" ]
+            [
+              canvas [ Id "map-canvas"; Class "map-canvas"] []
+              section [ Id "map-info"; Class "info-canvas hero is-success" ]  [
+                  div [ Class "hero-body" ] [
+                      p [Class "title"] [ str (model.text) ]
+                  ]
+              ]
             ]
-        ]
     ]
 
-let containerBox (model: Model) (dispatch: Msg -> unit) =
-    Bulma.box [
-        Bulma.content [
-            Html.ol [
-                for todo in model.Todos do
-                    Html.li [ prop.text todo.Description ]
-            ]
-        ]
-        Bulma.field.div [
-            field.isGrouped
-            prop.children [
-                Bulma.control.p [
-                    control.isExpanded
-                    prop.children [
-                        Bulma.input.text [
-                            prop.value model.Input
-                            prop.placeholder "What needs to be done?"
-                            prop.onChange (fun x -> SetInput x |> dispatch)
-                        ]
-                    ]
-                ]
-            ]
-        ]
-    ]
-
-let view (model: Model) (dispatch: Msg -> unit) =
-    Bulma.navbar [
-        prop.children [
-
-        ]
-    ]
 // ()
 // Bulma.hero [
 //     hero.isFullHeight
@@ -172,26 +222,27 @@ let GameUI: GameUIStatic = jsNative
 // type GameInfo = { id: string; player: PlayerDto }
 
 
+let gameApi =
+    Remoting.createApi ()
+    |> Remoting.withRouteBuilder Route.builder
+    |> Remoting.buildProxy<IGameApi>
 
 let init () : Promise<GameInfo> =
     async {
-        return! todosApi.start ()
+        return! gameApi.start ()
         //return { id = id; player = player }
     }
     |> Async.StartAsPromise
 
 let pollServer (gameInfo: GameInfo) : Promise<Option<IResult>> =
-    async { return! todosApi.poll gameInfo.id gameInfo.player }
+    async { return! gameApi.poll gameInfo.id gameInfo.player }
     |> Async.StartAsPromise
 
 let updateServer (msg: IMessage) (gameInfo: GameInfo) : Promise<unit> =
-    async { return! todosApi.update gameInfo.id gameInfo.player msg }
+    async { return! gameApi.update gameInfo.id gameInfo.player msg }
     |> Async.StartAsPromise
 
 let game = GameUI.create ()
-
-let testo = MoveCharacterDto { row = 0; col = 0 }
-JS.console.log(testo)
 
 // async {
 //

@@ -8,7 +8,7 @@ open Shared
 let client = testList "Client" [
     testCase "Added todo" <| fun _ ->
         let newTodo = Todo.create "new todo"
-        let model, _ = init2 ()
+        let model, _ = appInit ()
 
         let model, _ = update2 (AddedTodo newTodo) model
 

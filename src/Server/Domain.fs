@@ -141,14 +141,13 @@ and Game = { id: GameId; state: GameState }
 // GameMessage & GameResults
 //================================================================================
 
-// TODO: Remove player?
 and GameResult =
     | Start of GameId
     | PlayerOversee
-    | PlayerMoveSelection of Player * CharacterId * list<Position>
+    | PlayerMoveSelection
     | CharacterUpdate of CharacterId
-    | PlayerActionSelection of Player * SelectableActions
-    | PlayerAction of Player * list<CharacterId>
+    | PlayerActionSelection
+    | PlayerAction
     | CharacterDefeat of CharacterId
     | PlayerWin
 
@@ -156,7 +155,8 @@ type Recipient =
     | AllRecipients
     | PlayerRecipient of Player
 
-// TODO move player out?
+// TODO: Make tuples?
+// See: https://github.com/fsharp/fslang-suggestions/issues/743
 type GameMessage =
     | SelectCharacter of Player * CharacterId
     | DeselectCharacter of Player
@@ -165,5 +165,4 @@ type GameMessage =
     | DeselectAction of Player
     | PerformAction of Player * CharacterId
 
-// TODO: Make tuples?
-// See: https://github.com/fsharp/fslang-suggestions/issues/743
+

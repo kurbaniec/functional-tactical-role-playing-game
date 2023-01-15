@@ -32,7 +32,7 @@ module GameCoordinator =
         // TODO make this more clear
         let gameState = game |> Game.state
         let resultDto = GameResult.intoDto result gameState
-        let recipient = GameResult.recipient result
+        let recipient = gameState |> GameResult.recipient result
 
         match recipient with
         | AllRecipients ->
