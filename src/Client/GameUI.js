@@ -1,5 +1,5 @@
 ﻿// See: https://github.com/fable-compiler/fable3-samples/blob/main/interopFableFromJS/src/index.js
-import {init, pollServer, updateServer} from "./output/Index"
+import {init, MsgModule_startedMsg, pollServer, updateServer} from "./output/Index"
 import {GameInfo, DomainDto_CharacterDto, DomainDto_IMessage, DomainDto_IResult} from "./output/Shared/Shared";
 import {
     boardPosToVec3,
@@ -27,6 +27,7 @@ import {Input, InputManager} from "./components/InputManager"
 import {Cursor} from "./components/Cursor"
 import {Selector} from "./components/Selector"
 import {Character} from "./components/Character"
+import {sendStartedMsg} from "./components/Sub";
 
 class GameUI {
 
@@ -173,7 +174,7 @@ class GameUI {
 
     async poll() {
         while (this.isPolling) {
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(resolve => setTimeout(resolve, 250));
             /** @type {DomainDto_IResult} */
             const result = await pollServer(this.gameInfo)
             if (result) this.onResult(unwrap(result))
@@ -379,17 +380,7 @@ class GameUI {
             scene: scene
         }
 
-
-        async function eventTest() {
-            while (true) {
-                await new Promise(resolve => setTimeout(resolve, 3000));
-                const e = new CustomEvent("uiSub", { detail: "hey!"})
-                window.dispatchEvent(e)
-            }
-        }
-        const _ = eventTest()
-
-
+        sendStartedMsg()
 
         return new GameUI(gameInfo, gameState, characters, board, engineInfo)
     }

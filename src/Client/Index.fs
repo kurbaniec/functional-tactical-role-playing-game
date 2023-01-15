@@ -131,32 +131,67 @@ open Feliz.Bulma
 open Fable.React
 open Fable.React.Props
 
-type UI = { text: string }
+type ActionPreview = {
+    name: string
+    before: CharacterDto
+    after: CharacterDto
+}
+
+type UI =
+    | Waiting
+    | Started
+    | Character of CharacterDto
+    | Action of ActionPreview
+    // | Win
 
 type Msg =
-    | Text of string
+    | Started
+    | Character of CharacterDto
+    | Action of ActionPreview
 
 
 let appInit () : UI * Cmd<Msg> =
-    let model = { text= "hi" }
+    let model = Waiting
     let cmd = Cmd.none
-
     model, cmd
 
 let appUpdate (msg: Msg) (model: UI) : UI * Cmd<Msg> =
     match msg with
-    | Text txt -> { model with text = txt }, Cmd.none
+    | Msg.Started -> UI.Started, Cmd.none
+    | Msg.Character character -> UI.Character character, Cmd.none
+    | Msg.Action action -> UI.Action action, Cmd.none
 
-open Browser
+open Browser // See: https://github.com/fable-compiler/fable-browser
 
+type CustomEvent =
+    inherit Event
+    abstract member detail: Msg
+
+// See: https://stackoverflow.com/a/61808412/12347616
 let uiSub initial =
     let sub dispatch =
-        window.addEventListener ("uiSub", fun event ->
-            JS.console.log("Hey")
-            JS.console.log("Event", event)
-            dispatch (Text event?detail)
+        window.addEventListener ("uiSub", fun (event: Event) ->
+            event :?> CustomEvent |> fun e -> e.detail |> dispatch
         )
     Cmd.ofSub sub
+
+let waitingView () =
+    div [ Class "hero-body" ] [
+        p [Class "title"] [ str "Waiting for other player" ]
+        p [Class "subtitle"] [ str "This can take a while..." ]
+    ]
+
+let startedView () =
+    div [ Class "hero-body" ] [
+        p [Class "title"] [ str "Joined Game" ]
+        p [Class "subtitle"] [ str "🕹️" ]
+    ]
+
+let mock () =
+    div [ Class "hero-body" ] [
+        p [Class "title"] [ str "Not implemented" ]
+        p [Class "subtitle"] [ str "🕹️" ]
+    ]
 
 let view (model: UI) (dispatch: Msg -> unit) =
     div [] [
@@ -165,12 +200,19 @@ let view (model: UI) (dispatch: Msg -> unit) =
             [
               canvas [ Id "map-canvas"; Class "map-canvas"] []
               section [ Id "map-info"; Class "info-canvas hero is-success" ]  [
-                  div [ Class "hero-body" ] [
-                      p [Class "title"] [ str (model.text) ]
-                  ]
+                match model with
+                | UI.Waiting -> waitingView ()
+                | UI.Started -> startedView ()
+                | UI.Character character -> mock ()
+                | UI.Action character -> mock ()
               ]
             ]
     ]
+
+module Msg =
+    let startedMsg() = Msg.Started
+    let characterMsg (character: CharacterDto) = Msg.Character character
+    let actionMsg (preview: ActionPreview) = Msg.Action preview
 
 // ()
 // Bulma.hero [
