@@ -1,6 +1,6 @@
 ﻿import {
     AbstractMesh,
-    Color3, HighlightLayer,
+    Color3, Color4, HighlightLayer,
     MeshBuilder,
     SceneLoader,
     StandardMaterial, Tools,
@@ -23,11 +23,11 @@ class Character {
         mesh.position.addInPlace(positionDtoToVec3(this.model.position))
         const cursorMaterial = new StandardMaterial(`mat${this.model.id}`, scene);
         if (this.model.player === Player.Player1)
-            cursorMaterial.diffuseColor = Color3.Green();
+            cursorMaterial.diffuseColor = Color4.FromHexString("#48c774");
         else
-            cursorMaterial.diffuseColor = Color3.Red();
+            cursorMaterial.diffuseColor = Color4.FromHexString("#f14668")
         cursorMaterial.emissiveColor = new Color3(0.1, 0.1, 0.1);
-        cursorMaterial.alpha = 0.35;
+        cursorMaterial.alpha = 0.75;
         mesh.material = cursorMaterial;
         mesh.renderingGroupId = 0
         mesh.alphaIndex = 0
@@ -112,6 +112,11 @@ function queryModelFile(cls) {
         m.scaling = new Vector3(0.38, 0.38, 0.38)
         m.position.addInPlace(new Vector3(0, 0.95, 0))
         m.rotation.y = Tools.ToRadians(-90)
+    })
+    else if (cls === 2) fileName = new ModelFile("lance.glb", (m) => {
+        m.scaling = new Vector3(0.0012, 0.0012, 0.0012)
+        // m.position.addInPlace(new Vector3(0, 0.95, 0))
+        // m.rotation.y = Tools.ToRadians(-90)
     })
     return fileName
 }

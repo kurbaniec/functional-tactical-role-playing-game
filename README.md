@@ -63,3 +63,5 @@ You will find more documentation about the used F# components at the following p
 * ###### [Agile knight](https://poly.pizza/m/7aYuk5Rdlr-) by [Spiros Koutsourelis](https://poly.pizza/u/Spiros Koutsourelis) [[CC-BY](https://creativecommons.org/licenses/by/3.0/)] via Poly Pizza
 
 * ###### [Viking](https://poly.pizza/m/eVHUob4AIM3) by [Steve Schofield](https://poly.pizza/u/Steve Schofield) [[CC-BY](https://creativecommons.org/licenses/by/3.0/)] via Poly Pizza
+
+* ###### [Knight](https://poly.pizza/m/1TnT5Xc6vq) by [Vaporworks](https://poly.pizza/u/Vaporworks) [[CC-BY](https://creativecommons.org/licenses/by/3.0/)] via Poly Pizza

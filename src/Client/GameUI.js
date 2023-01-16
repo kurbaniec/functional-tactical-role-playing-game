@@ -13,7 +13,7 @@ import {
 } from "./Utils";
 import {
     ArcRotateCamera,
-    Color3,
+    Color3, Color4,
     Engine,
     HemisphericLight,
     MeshBuilder,
@@ -304,6 +304,7 @@ class GameUI {
         const canvas = document.getElementById("map-canvas")
         const engine = new Engine(canvas)
         const scene = new Scene(engine)
+        scene.clearColor = Color4.FromHexString("#3dc1d9")
         // scene.useOrderIndependentTransparency = true;
         const camera = new ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 4, 15, Vector3.Zero());
         // https://forum.babylonjs.com/t/how-can-i-increase-the-speed-at-which-the-camera-zooms-when-using-the-scroll-wheel/12281/5
@@ -332,17 +333,17 @@ class GameUI {
 
         //Create the multi material
         //Create differents materials
-        const whiteMaterial = new StandardMaterial("White");
-        whiteMaterial.diffuseColor = new Color3(1, 1, 1);
-        const blueMaterial = new StandardMaterial("Blue");
-        blueMaterial.diffuseColor = new Color3(0.2, 0.2, 1);
+        const landMaterial = new StandardMaterial("White");
+        landMaterial.diffuseColor = Color4.FromHexString("#aac928");
+        const waterMaterial = new StandardMaterial("Blue");
+        waterMaterial.diffuseColor = Color4.FromHexString("#3dc1d9")
         const blackMaterial = new StandardMaterial("Black");
-        blackMaterial.diffuseColor = new Color3(0, 0, 0);
+        blackMaterial.diffuseColor = Color4.FromHexString("#5c696b")
 
         // Create Multi Material
         const multimat = new MultiMaterial("multi", scene);
-        multimat.subMaterials.push(whiteMaterial);
-        multimat.subMaterials.push(blueMaterial);
+        multimat.subMaterials.push(landMaterial);
+        multimat.subMaterials.push(waterMaterial);
         multimat.subMaterials.push(blackMaterial);
 
 
