@@ -3,7 +3,8 @@
 open GameState
 
 let newGame (gid: System.Guid) : List<GameResult> * Game =
-    let board = Board.create (Row 7) (Col 7)
+    let boardSize = 7
+    let board = Board.create (Row boardSize) (Col boardSize)
 
     let rnd = System.Random()
     let positionShuffle = [0; 1; -1]
@@ -35,75 +36,121 @@ let newGame (gid: System.Guid) : List<GameResult> * Game =
         ||> List.fold (fun board (tile, pos) -> board |> Board.updateTile tile pos)
 
 
+    let toPositionHelper (characters: list<(Character*(int*int))>): list<(Character*Position)> =
+        List.map (fun c ->
+            let c, (row, col) = c
+            (c, (Row row, Col col))
+        ) characters
 
-    let playerPos = (Row 0, Col 0)
-    let cid: CharacterId = System.Guid.NewGuid()
-    let name = "Swordsman"
-    let cls = CharacterClass.Sword
+    let characters1, characters2 =
+        [
+            (Character.createSwordWielder(), (0, 0))
+            (Character.createLancer(), (1, 0))
+            (Character.createHealer(), (2, 0))
+            (Character.createAxeMaster(), (boardSize-1, 0))
+        ]
+        |> fun characters ->
+            let player1Characters = characters
+            let player2Characters =
+                characters
+                |> List.map (fun c ->
+                    let c, (row, col) = c
+                    (Character.withNewId c, (boardSize-1-row, boardSize-1-col))
+                )
+            (player1Characters, player2Characters)
+        ||> fun player1Characters player2Characters ->
+            (toPositionHelper player1Characters, toPositionHelper player2Characters)
 
-    let endTurn =
-        { name = "End"
-          distance = Distance 0
-          kind = End }
+    let player1Characters =
+        characters1
+        |> List.map fst
+        |> List.map (fun character -> (character |> Character.id, character))
+        |> Map.ofList
 
-    let actions =
-        [ { name = "Attack"
-            distance = Distance 1
-            kind = Attack }
-          endTurn ]
+    let player2Characters =
+        characters2
+        |> List.map fst
+        |> List.map (fun character -> (character |> Character.id, character))
+        |> Map.ofList
 
-    let movement =
-        { kind = MovementType.Foot
-          distance = Distance 2 }
-
-    let character: Character =
-        { id = cid
-          name = name
-          stats =
-            { hp = 1
-              maxHp = 10
-              def = 10
-              atk = 5
-              heal = 0
-              cls = cls }
-          actions = actions
-          movement = movement }
-
-    let healerPos = (Row 3, Col 0)
-    let healerId = System.Guid.NewGuid()
-
-    let heal =
-        { name = "Heal"
-          distance = Distance 2
-          kind = Heal }
-
-    let healActions = heal :: actions
-    let healerStats = { character.stats with heal = 3; cls = CharacterClass.Support }
-
-    let healer =
-        { character with
-            id = healerId
-            name = "Healer"
-            actions = healActions
-            stats = healerStats }
-
-    let pos2 = (Row 2, Col 6)
-    let character2 = {
-        character with
-            id = System.Guid.NewGuid()
-            movement = { movement with kind = MovementType.Fly; distance=Distance 3  } }
-
-    let characters =
-        Map [ (character.id, character)
-              (healer.id, healer) ]
-
-    let characters2 = Map [ (character2.id, character2) ]
-
+    let characters = characters1 @ characters2
     let board =
-        board
-        |> Board.placeCharacter playerPos character.id
-        |> Board.placeCharacter pos2 character2.id
-        |> Board.placeCharacter healerPos healer.id
+        (board, characters)
+        ||> List.fold (fun board character ->
+            let character, pos = character
+            board |> Board.placeCharacter pos character.id
+        )
+
+
+
+    // let playerPos = (Row 0, Col 0)
+    // let cid: CharacterId = System.Guid.NewGuid()
+    // let name = "Swordsman"
+    // let cls = CharacterClass.Sword
+    //
+    // let endTurn =
+    //     { name = "End"
+    //       distance = Distance 0
+    //       kind = End }
+    //
+    // let actions =
+    //     [ { name = "Attack"
+    //         distance = Distance 1
+    //         kind = Attack }
+    //       endTurn ]
+    //
+    // let movement =
+    //     { kind = MovementType.Foot
+    //       distance = Distance 2 }
+    //
+    // let character: Character =
+    //     { id = cid
+    //       name = name
+    //       stats =
+    //         { hp = 1
+    //           maxHp = 10
+    //           def = 10
+    //           atk = 5
+    //           heal = 0
+    //           cls = cls }
+    //       actions = actions
+    //       movement = movement }
+    //
+    // let healerPos = (Row 3, Col 0)
+    // let healerId = System.Guid.NewGuid()
+    //
+    // let heal =
+    //     { name = "Heal"
+    //       distance = Distance 2
+    //       kind = Heal }
+    //
+    // let healActions = heal :: actions
+    // let healerStats = { character.stats with heal = 3; cls = CharacterClass.Support }
+    //
+    // let healer =
+    //     { character with
+    //         id = healerId
+    //         name = "Healer"
+    //         actions = healActions
+    //         stats = healerStats }
+    //
+    // let pos2 = (Row 2, Col 6)
+    // let character2 = {
+    //     character with
+    //         id = System.Guid.NewGuid()
+    //         movement = { movement with kind = MovementType.Fly; distance=Distance 3  } }
+    //
+    // let characters =
+    //     Map [ (character.id, character)
+    //           (healer.id, healer) ]
+    //
+    // let characters2 = Map [ (character2.id, character2) ]
+    //
+    // let board =
+    //     board
+    //     |> Board.placeCharacter playerPos character.id
+    //     |> Board.placeCharacter pos2 character2.id
+    //     |> Board.placeCharacter healerPos healer.id
 
 
     // let gameDetails =
@@ -120,11 +167,11 @@ let newGame (gid: System.Guid) : List<GameResult> * Game =
 
     let phase = GamePhase.PlayerOverseePhase
     let state: GameState = {
-         player1Characters = characters
-         player2Characters = characters2
+         player1Characters = player1Characters
+         player2Characters = player2Characters
          board = board
          turnOf = Player1
-         awaitingTurns = characters
+         awaitingTurns = player1Characters
          phase = phase
          previous = None
     }

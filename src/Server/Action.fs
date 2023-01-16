@@ -35,6 +35,8 @@ module Attack =
         | Normal -> float (thisAtk - otherDef)
         |> round
         |> int
+        |> fun damage -> System.Math.Clamp(damage, 0, System.Int32.MaxValue)
+        |> (*) -1
 
     let attack (thisCharacter: Character) (otherCharacter: Character) (action: Action) : ActionResult =
         otherCharacter
