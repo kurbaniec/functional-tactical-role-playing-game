@@ -1,5 +1,6 @@
-﻿import {Color3, MeshBuilder, StandardMaterial} from "@babylonjs/core";
+﻿import {Color3, MeshBuilder, SceneLoader, StandardMaterial, TransformNode, Vector3} from "@babylonjs/core";
 import {eachRecursive, Player, positionDtoToVec3, setVec3FromPositionDto, vec3ToPositionDto} from "../Utils";
+import "@babylonjs/loaders/glTF"
 
 class Character {
 
@@ -23,6 +24,26 @@ class Character {
         mesh.renderingGroupId = 0
         mesh.alphaIndex = 0
         this.mesh = mesh
+
+        SceneLoader.ImportMesh(
+            "", "./", "support.glb", scene, (newMeshes) =>  {
+            const importRoot = new TransformNode("")
+            // scene.stopAnimation(newMeshes[0]);
+            newMeshes.forEach(m => {
+                // scene.stopAnimation(m)
+                m.setParent(importRoot)
+            })
+
+            importRoot.scaling = new Vector3(0.5, 0.5, 0.5)
+
+            // Stop all mesh animations
+            // See: https://github.com/BabylonJS/Babylon.js/issues/4514
+            scene.animationGroups.forEach(group => {
+                group.stop()
+                group.reset()
+            })
+        })
+
     }
 
     /** @param {DomainDto_CharacterDto} model **/

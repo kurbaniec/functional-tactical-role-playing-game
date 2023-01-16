@@ -53,3 +53,13 @@ You will find more documentation about the used F# components at the following p
 * [Saturn](https://saturnframework.org/)
 * [Fable](https://fable.io/docs/)
 * [Elmish](https://elmish.github.io/elmish/)
+
+
+
+## Sources
+
+* ###### [Animated Wizard](https://poly.pizza/m/kttbFvCl2C) by [Quaternius](https://poly.pizza/u/Quaternius) [[CC-BY](https://creativecommons.org/licenses/by/3.0/)] via Poly Pizza
+
+* ###### [Agile knight](https://poly.pizza/m/7aYuk5Rdlr-) by [Spiros Koutsourelis](https://poly.pizza/u/Spiros Koutsourelis) [[CC-BY](https://creativecommons.org/licenses/by/3.0/)] via Poly Pizza
+
+* ###### [Viking](https://poly.pizza/m/eVHUob4AIM3) by [Steve Schofield](https://poly.pizza/u/Steve Schofield) [[CC-BY](https://creativecommons.org/licenses/by/3.0/)] via Poly Pizza
