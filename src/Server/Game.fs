@@ -3,7 +3,38 @@
 open GameState
 
 let newGame (gid: System.Guid) : List<GameResult> * Game =
-    let board = Board.create (Row 5) (Col 5)
+    let board = Board.create (Row 7) (Col 7)
+
+    let rnd = System.Random()
+    let positionShuffle = [0; 1; -1]
+    let rndOffset () = positionShuffle |> List.item (rnd.Next(positionShuffle |> List.length))
+    let rowOffset = rndOffset()
+
+    let mountains =
+        [(1, 2); (1, 3); (1, 4); (2, 3)]
+        |> List.map (fun pos -> (Tile.Mountain None, pos))
+
+    let ponds =
+        [(4, 2); (5, 4); (6, 3)]
+        |> List.map (fun pos -> (Tile.Water None, pos))
+        |> List.map (fun tile -> [tile])
+
+    let obstacles =
+        mountains :: ponds
+        |> List.map (fun tileGroup ->
+            let colOffset = rndOffset()
+            tileGroup |> List.map (fun tile ->
+                let tile, (row, col) = tile
+                (tile, (Row (row + rowOffset), (Col (col + colOffset))))
+            )
+        )
+        |> List.collect id
+
+    let board =
+        (board, obstacles)
+        ||> List.fold (fun board (tile, pos) -> board |> Board.updateTile tile pos)
+
+
 
     let playerPos = (Row 0, Col 0)
     let cid: CharacterId = System.Guid.NewGuid()
@@ -56,8 +87,11 @@ let newGame (gid: System.Guid) : List<GameResult> * Game =
             actions = healActions
             stats = healerStats }
 
-    let pos2 = (Row 2, Col 4)
-    let character2 = { character with id = System.Guid.NewGuid() }
+    let pos2 = (Row 2, Col 6)
+    let character2 = {
+        character with
+            id = System.Guid.NewGuid()
+            movement = { movement with kind = MovementType.Fly; distance=Distance 3  } }
 
     let characters =
         Map [ (character.id, character)

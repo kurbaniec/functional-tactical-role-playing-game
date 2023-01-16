@@ -14,7 +14,7 @@ open Fable.Core
 
 Program.mkProgram Index.appInit Index.appUpdate Index.view
 #if DEBUG
-|> Program.withConsoleTrace
+// |> Program.withConsoleTrace
 #endif
 |> Program.withReactSynchronous "elmish-app"
 |> Program.withSubscription Index.uiSub

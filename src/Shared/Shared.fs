@@ -34,6 +34,7 @@ module DomainDto =
     type TileDto =
         | Land = 0
         | Water = 1
+        | Mountain = 2
 
     type BoardDto = ResizeArray<ResizeArray<TileDto>>
 

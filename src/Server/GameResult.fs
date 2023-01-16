@@ -23,6 +23,7 @@ let intoTileDto (tile: Tile) : TileDto =
     match tile with
     | Land _ -> TileDto.Land
     | Water _ -> TileDto.Water
+    | Mountain _ -> TileDto.Mountain
 
 let intoPositionDto (pos: Position) : PositionDto =
     let row, col = pos

@@ -86,6 +86,7 @@ type Occupied = option<CharacterId>
 type Tile =
     | Land of Occupied
     | Water of Occupied
+    | Mountain of Occupied
 
 type Row = Row of int
 type Col = Col of int

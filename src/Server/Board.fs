@@ -4,15 +4,14 @@ open Movement
 open Position
 
 let placeCharacter (pos: Position) (c: CharacterId) (board: Board) : Board =
-    let (row, col) = pos
+    let row, col = pos
     let colMap = board[row]
     let existingTile = colMap[col]
-    // Check if occupied
-    // TODO fail when occupied
     let newTile =
         match existingTile with
         | Land _ -> Land <| Some c
         | Water _ -> Land <| Some c
+        | Mountain _ -> Mountain <| Some c
 
     let newColMap = colMap.Add(col, newTile)
     let newBoard = board.Add(row, newColMap)
@@ -27,26 +26,26 @@ let findCharacter (c: CharacterId) (board: Board) : Position =
             | Some cid -> if cid = c then Some(row, col) else None
             | None -> None))
 
-let containsPosition (pos: Position) (b: Board) : bool =
-    let (row, col) = pos
+let containsPosition (pos: Position) (board: Board) : bool =
+    let row, col = pos
 
-    b
+    board
     |> Map.tryFind row
     |> Option.map (Map.containsKey col)
     |> Option.defaultValue false
 
-let tryFindTile (pos: Position) (b: Board) : Option<Tile> =
-    let (row, col) = pos
-    b |> Map.tryFind row |> Option.map (Map.tryFind col) |> Option.flatten
+let tryFindTile (pos: Position) (board: Board) : Option<Tile> =
+    let row, col = pos
+    board |> Map.tryFind row |> Option.map (Map.tryFind col) |> Option.flatten
 
-let findTile (pos: Position) (b: Board) : Tile =
-    let (row, col) = pos
-    b |> Map.find row |> Map.find col
+let findTile (pos: Position) (board: Board) : Tile =
+    let row, col = pos
+    board |> Map.find row |> Map.find col
 
-let private updateTile (tile: Tile) (pos: Position) (b: Board) : Board =
-    let (row, col) = pos
+let updateTile (tile: Tile) (pos: Position) (board: Board) : Board =
+    let row, col = pos
 
-    b
+    board
     |> Map.change row (fun colMap ->
         match colMap with
         | None -> None
@@ -70,9 +69,7 @@ let removeCharacter (c: CharacterId) (board: Board) : Board =
     let tile = board |> findTile pos |> Tile.leave
     board |> updateTile tile pos
 
-let findNeighbors (pos: Position) (b: Board) : list<Position * Tile> =
-    // let row, col = pos
-
+let findNeighbors (pos: Position) (board: Board) : list<Position * Tile> =
     let newPos =
         [ (Row 0, Col -1, pos) // Up
           (Row 0, Col 1, pos) // Down
@@ -81,8 +78,8 @@ let findNeighbors (pos: Position) (b: Board) : list<Position * Tile> =
 
     newPos
     |> List.map (fun pos -> pos |||> Position.add)
-    |> List.filter (fun pos -> containsPosition pos b)
-    |> List.map (fun pos -> (pos, (findTile pos b)))
+    |> List.filter (fun pos -> containsPosition pos board)
+    |> List.map (fun pos -> (pos, (findTile pos board)))
 
 type Frontier = list<Position>
 type FoundTile = { tile: Tile; distance: int }
@@ -185,10 +182,4 @@ let create (row: Row) (col: Col) : Board =
     let columns = [ for i in 0..maxCol -> (Col i, Tile.Land None) ] |> Map.ofList
     let board = [ for i in 0..maxRow -> (Row i, columns) ] |> Map.ofList
 
-    // TODO: randomize?
-    let obstacles =
-        [ (Tile.Water None, (Row 0, Col <| maxCol / 2))
-          (Tile.Water None, (Row maxRow, Col <| maxCol / 2)) ]
-
-    (board, obstacles)
-    ||> List.fold (fun board (tile, pos) -> board |> updateTile tile pos)
+    board

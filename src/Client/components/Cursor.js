@@ -31,6 +31,14 @@ class Cursor {
             this.mesh.position.addInPlace(new Vector3(1, 0, 0))
     }
 
+    hide() {
+        this.mesh.isVisible = false
+    }
+
+    show() {
+        this.mesh.isVisible = true
+    }
+
     get position() {
         return this.mesh.position
     }

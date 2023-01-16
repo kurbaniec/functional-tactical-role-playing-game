@@ -32,5 +32,11 @@ let createMovementPredicate (character: Character) =
 
         landPredicate
     | Fly ->
-        let flyPredicate (tile: Tile) = tile |> Tile.isOccupied |> not
+        let flyPredicate (tile: Tile) =
+            if tile |> Tile.isOccupied then
+                false
+            else
+                match tile with
+                | Mountain _ -> false
+                | _ -> true
         flyPredicate

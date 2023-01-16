@@ -35,9 +35,12 @@ class GameUI {
     onPlayerOverseeResult(result) {
         this.gameState.turnOf = result.player
         this.removeHighlight();
+        this.cursor.hide()
         this.selection.clear();
+
         if (!this.myTurn()) return;
         this.highlightCharacters(result.selectableCharacters)
+        this.cursor.show()
         this.showCharacterInfo(this.cursor.positionDto)
 
         this.gameState.update = (input) => {
@@ -95,10 +98,8 @@ class GameUI {
     onPlayerActionResult(result) {
         this.selection.clear()
         this.highlightCharacters(result.selectableCharacters)
-        /** @type {Map<string, DomainDto_CharacterDto>} */
         const preview = result.preview
-
-        // TODO: preview action without cursor movement
+        this.showActionOrCharacterInfo(this.cursor.positionDto, preview)
 
         this.gameState.update = (input) => {
             if (input === Input.Enter) {
@@ -111,22 +112,15 @@ class GameUI {
                 updateServer(new DomainDto_IMessage(4), this.gameInfo)
             } else {
                 this.cursor.moveCursor(input)
-                const characterBeforeAction = this.findCharacter(this.cursor.positionDto)
-                if (!characterBeforeAction) return;
-                if (preview && preview.results.has(characterBeforeAction.id)) {
-                    const actionName = preview.name
-                    const characterAfterAction = preview.results.get(characterBeforeAction.id)
-                    sendActionMsg(actionName, characterBeforeAction.model, characterAfterAction)
-                } else {
-                    this.showCharacterInfo(this.cursor.positionDto)
-                }
             }
+            this.showActionOrCharacterInfo(this.cursor.positionDto, preview)
         }
     }
 
     /** @param {DomainDto_PlayerWinResult} result **/
     onPlayerWinResult(result) {
         this.removeHighlight()
+        this.cursor.hide()
         this.isPolling = false
         sendWinMsg(this.gameInfo.player, result.player)
         this.gameState.update = (input) => {
@@ -138,9 +132,8 @@ class GameUI {
     /** @param {DomainDto_CharacterUpdateResult} result */
     onCharacterUpdate(result) {
         console.log(result)
-        const c = this.characters.get(result.character.id)
-        console.log("c", c)
-        if (c) c.updateModel(result.character)
+        const character = this.characters.get(result.character.id)
+        if (character) character.updateModel(result.character)
     }
 
     /** @param {DomainDto_CharacterDefeatResult} result */
@@ -251,6 +244,22 @@ class GameUI {
     }
 
     /**
+     * @param {DomainDto_PositionDto} pos
+     * @param {DomainDto_ActionPreviewDto} preview
+     */
+    showActionOrCharacterInfo(pos, preview) {
+        const characterBeforeAction = this.findCharacter(pos)
+        if (!characterBeforeAction) return;
+        if (preview && preview.results.has(characterBeforeAction.id)) {
+            const actionName = preview.name
+            const characterAfterAction = preview.results.get(characterBeforeAction.id)
+            sendActionMsg(actionName, characterBeforeAction.model, characterAfterAction)
+        } else {
+            this.showCharacterInfo(pos)
+        }
+    }
+
+    /**
      * @param {GameInfo} gameInfo
      * @param gameState
      * @param {Map<string, Character>}characters
@@ -295,6 +304,8 @@ class GameUI {
         const scene = new Scene(engine)
         // scene.useOrderIndependentTransparency = true;
         const camera = new ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 4, 15, Vector3.Zero());
+        // https://forum.babylonjs.com/t/how-can-i-increase-the-speed-at-which-the-camera-zooms-when-using-the-scroll-wheel/12281/5
+        camera.inputs.attached.mousewheel.wheelPrecision = 10
 
         camera.attachControl(canvas, true);
         const light = new HemisphericLight("light", new Vector3(1, 1, 0), scene);
@@ -321,12 +332,15 @@ class GameUI {
         //Create differents materials
         const whiteMaterial = new StandardMaterial("White");
         whiteMaterial.diffuseColor = new Color3(1, 1, 1);
+        const blueMaterial = new StandardMaterial("Blue");
+        blueMaterial.diffuseColor = new Color3(0.2, 0.2, 1);
         const blackMaterial = new StandardMaterial("Black");
         blackMaterial.diffuseColor = new Color3(0, 0, 0);
 
         // Create Multi Material
         const multimat = new MultiMaterial("multi", scene);
         multimat.subMaterials.push(whiteMaterial);
+        multimat.subMaterials.push(blueMaterial);
         multimat.subMaterials.push(blackMaterial);
 
 
@@ -343,9 +357,11 @@ class GameUI {
         let base = 0;
 
         // meshes are built from bottom to top, right to left
+        // let tiles = boardInfo.tiles.map(cols => cols.reverse())
+        let tiles = boardInfo.tiles.reverse()
         for (let col = boardInfo.col - 1; col >= 0; col--) {
             for (let row = boardInfo.row - 1; row >= 0; row--) {
-                tiledGround.subMeshes.push(new SubMesh(boardInfo.tiles[row][col], 0, verticesCount, base, tileIndicesLength, tiledGround));
+                tiledGround.subMeshes.push(new SubMesh(tiles[row][col], 0, verticesCount, base, tileIndicesLength, tiledGround));
                 base += tileIndicesLength;
             }
         }
