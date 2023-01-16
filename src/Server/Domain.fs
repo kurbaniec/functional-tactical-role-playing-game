@@ -1,6 +1,8 @@
 ﻿[<AutoOpen>]
 module Domain
 
+open Shared
+
 //================================================================================
 // Movement
 //================================================================================
@@ -107,10 +109,6 @@ type PlayerActionSelect =
     { character: Character
       availableActions: SelectableActions }
 
-// TODO implement action preview
-// Precalculate @ PlayerActionSelect and show diff in UI
-// Add: type ActionResults = Map<CharacterId, CharacterAfterAction>
-
 type PlayerAction =
     { character: Character
       availableActions: SelectableActions
@@ -151,13 +149,12 @@ and GameResult =
     | PlayerAction
     | CharacterDefeat of CharacterId
     | PlayerWin
+    | Unsupported of DomainDto.ErrorMsg
 
 type Recipient =
     | AllRecipients
     | PlayerRecipient of Player
 
-// TODO: Make tuples?
-// See: https://github.com/fsharp/fslang-suggestions/issues/743
 type GameMessage =
     | SelectCharacter of Player * CharacterId
     | DeselectCharacter of Player

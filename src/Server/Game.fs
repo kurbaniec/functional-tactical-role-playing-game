@@ -1,6 +1,5 @@
 ﻿module Game
 
-open GameState
 
 let newGame (gid: System.Guid) : List<GameResult> * Game =
     let boardSize = 7
@@ -102,7 +101,6 @@ let state (game: Game) = game.state
 let phase (game: Game) = game.state.phase
 
 let update (player: Player) (msg: GameMessage) (game: Game) : List<GameResult> * Game =
-    // TODO rewrite as result type
     if not <| isCorrectPlayer player game then
         ([], game)
     else
@@ -112,5 +110,5 @@ let update (player: Player) (msg: GameMessage) (game: Game) : List<GameResult> *
         | PlayerMovePhase phase -> GamePhase.PlayerMovePhase.update msg state phase
         | PlayerActionSelectPhase phase -> GamePhase.PlayerActionSelectPhase.update msg state phase
         | PlayerActionPhase phase -> GamePhase.PlayerActionPhase.update msg state phase
-        | PlayerWinPhase -> state |> GameState.toEmptyUpdate // TODO: Send game already ended message
+        | PlayerWinPhase -> state |> GameState.toEmptyUpdateWithMsg "Game already ended"
         |> fun (r, s) -> (r, { game with state = s })

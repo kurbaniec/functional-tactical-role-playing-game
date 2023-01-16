@@ -20,7 +20,6 @@
       <Content Include="components\Character.js" />
       <Content Include="components\Subscription.js" />
       <Content Include="GameUI.js" />
-      <Content Include="Scene.js" />
       <Content Include="output\Index.js" />
       <Content Include="output\Index.js.map" />
       <Content Include="output\Shared\Shared.js.map" />

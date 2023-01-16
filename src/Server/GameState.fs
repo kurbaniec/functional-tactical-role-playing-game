@@ -72,6 +72,9 @@ let isDefeated (p: Player) (gameState: GameState) : bool =
 
 let toEmptyUpdate (gameState: GameState) : GameStateUpdate = ([], gameState)
 
+let toEmptyUpdateWithMsg (msg: string) (gameState: GameState) : GameStateUpdate
+    = ([Unsupported msg], gameState)
+
 let toPreviousState (gameState: GameState) : GameStateUpdate =
     match gameState |> previous with
     | None -> gameState |> toEmptyUpdate

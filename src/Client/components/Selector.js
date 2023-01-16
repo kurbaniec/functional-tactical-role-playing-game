@@ -16,7 +16,6 @@ class Selector {
         if (!selections || selections.length === 0) return;
         const panel = new StackPanel();
         selections.forEach((s) => {
-            // TODO: better way?
             const ui = new InputText();
             ui.width = "150px";
             ui.maxWidth = 0.2;

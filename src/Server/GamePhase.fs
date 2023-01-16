@@ -43,7 +43,7 @@ module PlayerOverseePhase =
 
         match msg with
         | SelectCharacter (p, c) -> selectCharacter p c state
-        | _ -> state |> GameState.toEmptyUpdate // TODO: send unsupported msg result
+        | _ -> state |> GameState.toEmptyUpdateWithMsg $"Unsupported message {msg}"
 
 module PlayerMovePhase =
     let deselectCharacter (p: Player) (state: GameState) : GameStateUpdate = state |> GameState.toPreviousState
@@ -63,7 +63,6 @@ module PlayerMovePhase =
 
             // Look for all tiles in distance
             let boardPredicate (t: Tile) = true
-            // TODO: Move extraction logic to board module?
             // Filter for actions that can be executed
             let boardActionExtractor (actionPredicate: Action.ApplicableToPredicate) (foundTiles: Board.FoundTiles) =
                 foundTiles
@@ -116,7 +115,7 @@ module PlayerMovePhase =
         match msg with
         | DeselectCharacter (p) -> deselectCharacter p state
         | MoveCharacter (p, pos) -> moveCharacter p pos state phase
-        | _ -> state |> GameState.toEmptyUpdate
+        | _ -> state |> GameState.toEmptyUpdateWithMsg $"Unsupported message {msg}"
 
 module PlayerActionSelectPhase =
     let private precalculateAction
@@ -154,8 +153,6 @@ module PlayerActionSelectPhase =
                 { state = state
                   undoResults = [ PlayerActionSelection ] }
 
-
-            // TODO: Send preview info when action is applied
             let selectableAction = precalculateAction selectableAction phase.character state
 
             // E.g. after attack enemy has xyz hp
@@ -177,7 +174,7 @@ module PlayerActionSelectPhase =
     let update (msg: GameMessage) (state: GameState) (phase: PlayerActionSelect) : GameStateUpdate =
         match msg with
         | SelectAction (p, a) -> selectAction p a state phase
-        | _ -> state |> GameState.toEmptyUpdate
+        | _ -> state |> GameState.toEmptyUpdateWithMsg $"Unsupported message {msg}"
 
 module PlayerActionPhase =
     let deselectAction (p: Player) (state: GameState) = state |> GameState.toPreviousState
@@ -232,23 +229,10 @@ module PlayerActionPhase =
                 | Player1 -> (msg @ [ PlayerWin ], { state with phase = PlayerWinPhase })
                 | Player2 -> (msg @ [ PlayerWin ], { state with phase = PlayerWinPhase })
             else
-                // TODO: when awaiting turns is merge to GameDetails make if else
                 let awaitingTurns =
                     state.awaitingTurns |> Map.remove (thisCharacter |> Character.id)
 
                 if awaitingTurns |> Map.isEmpty then
-                    // Player turn switch
-                    // TODO: change when implementing second player
-                    (*let awaitingTurns = details |> GameDetails.characters oppositePlayer
-                    let details = { details with turnOf = oppositePlayer }
-
-                    let state =
-                        PlayerOverseeState(
-                            { details = details
-                              awaitingTurns = awaitingTurns }
-                        )
-
-                    (msg @ [ PlayerOversee oppositePlayer ], state)*)
                     let awaitingTurns = state |> GameState.characters oppositePlayer
 
                     let state =
@@ -284,4 +268,4 @@ module PlayerActionPhase =
         match msg with
         | DeselectAction p -> deselectAction p state
         | PerformAction (p, cid) -> performAction p cid state phase
-        | _ -> state |> GameState.toEmptyUpdate
+        | _ -> state |> GameState.toEmptyUpdateWithMsg $"Unsupported message {msg}"

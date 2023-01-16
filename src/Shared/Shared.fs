@@ -121,6 +121,8 @@ module DomainDto =
         player: PlayerDto
     }
 
+    type ErrorMsg = string
+
     type IResult =
         | StartResult of StartResult
         | PlayerOverseeResult of PlayerOverseeResult
@@ -130,6 +132,7 @@ module DomainDto =
         | PlayerActionResult of PlayerActionResult
         | CharacterDefeatResult of CharacterDefeatResult
         | PlayerWinResult of PlayerWinResult
+        | UnsupportedResult of ErrorMsg
 
 
 

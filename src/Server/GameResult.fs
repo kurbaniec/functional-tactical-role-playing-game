@@ -18,6 +18,7 @@ let recipient (result: GameResult) (state: GameState) : Recipient =
     | PlayerAction -> PlayerRecipient turnOf
     | CharacterDefeat _ -> AllRecipients
     | PlayerWin -> AllRecipients
+    | Unsupported _ -> AllRecipients
 
 let intoTileDto (tile: Tile) : TileDto =
     match tile with
@@ -32,19 +33,15 @@ let intoPositionDto (pos: Position) : PositionDto =
       col = Col.value col }
 
 let intoBoardDto (board: Board) : BoardDto =
-    // TODO: rewrite more functional?
-    let boardDto = ResizeArray<ResizeArray<TileDto>>()
-
-    for r in 0 .. board.Count - 1 do
-        let colMap = board[Row r]
-        boardDto.Add(ResizeArray())
-
-        for c in 0 .. colMap.Count - 1 do
-            let tile = colMap[Col c]
-            let tileDto = intoTileDto tile
-            boardDto[ r ].Add(tileDto)
-
-    boardDto
+    board
+    |> Map.valueList
+    |> List.map (fun colMap ->
+        colMap
+        |> Map.valueList
+        |> List.map (fun tile -> tile |> intoTileDto)
+        |> ResizeArray
+    )
+    |> ResizeArray
 
 let intoClsDto (cls: CharacterClass) : CharacterClassDto =
     match cls with
@@ -201,4 +198,5 @@ let intoDto (result: GameResult) (state: GameState) =
     | PlayerWinPhase, PlayerWin -> intoPlayerWinDto state
     | _, CharacterUpdate cid -> intoCharacterUpdateDto cid state
     | _, CharacterDefeat cid -> intoCharacterDefeatDto cid
-    | _ -> failwith "intoDto" // TODO not supported
+    | _, Unsupported msg -> UnsupportedResult msg
+    | _ -> UnsupportedResult "Game in corrupted state"

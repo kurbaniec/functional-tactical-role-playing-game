@@ -2,12 +2,10 @@
     AbstractMesh,
     Color3,
     Color4,
-    HighlightLayer,
     MeshBuilder,
     SceneLoader,
     StandardMaterial,
     Tools,
-    TransformNode,
     Vector3,
 } from "@babylonjs/core";
 import {

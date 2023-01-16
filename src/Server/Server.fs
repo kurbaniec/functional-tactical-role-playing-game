@@ -29,7 +29,6 @@ module GameCoordinator =
     let info (msg: string) (logger: ILogger) = logger.LogInformation(msg)
 
     let enqueueResult (result: GameResult) (game: Game) =
-        // TODO make this more clear
         let gameState = game |> Game.state
         let resultDto = GameResult.intoDto result gameState
         let recipient = gameState |> GameResult.recipient result
