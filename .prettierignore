@@ -1,0 +1,8 @@
+**/output
+**/Server
+**/Shared
+**/node_modules
+**/.fable
+**/.config
+**/obj
+**/bin

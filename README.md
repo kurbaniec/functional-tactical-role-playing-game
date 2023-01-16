@@ -8,8 +8,8 @@ This template can be used to generate a full-stack web application using the [SA
 
 You'll need to install the following pre-requisites in order to build SAFE applications
 
-* [.NET Core SDK](https://www.microsoft.com/net/download) 6.0 or higher
-* [Node 16](https://nodejs.org/en/download/)
+-   [.NET Core SDK](https://www.microsoft.com/net/download) 6.0 or higher
+-   [Node 16](https://nodejs.org/en/download/)
 
 ## Starting the application
 
@@ -50,22 +50,20 @@ If you want to know more about the full Azure Stack and all of it's components (
 
 You will find more documentation about the used F# components at the following places:
 
-* [Saturn](https://saturnframework.org/)
-* [Fable](https://fable.io/docs/)
-* [Elmish](https://elmish.github.io/elmish/)
-
-
+-   [Saturn](https://saturnframework.org/)
+-   [Fable](https://fable.io/docs/)
+-   [Elmish](https://elmish.github.io/elmish/)
 
 ## Sources
 
-* ###### [Animated Wizard](https://poly.pizza/m/kttbFvCl2C) by [Quaternius](https://poly.pizza/u/Quaternius) [[CC-BY](https://creativecommons.org/licenses/by/3.0/)] via Poly Pizza
+-   ###### [Animated Wizard](https://poly.pizza/m/kttbFvCl2C) by [Quaternius](https://poly.pizza/u/Quaternius) [[CC-BY](https://creativecommons.org/licenses/by/3.0/)] via Poly Pizza
 
-* ###### [Agile knight](https://poly.pizza/m/7aYuk5Rdlr-) by [Spiros Koutsourelis](https://poly.pizza/u/Spiros Koutsourelis) [[CC-BY](https://creativecommons.org/licenses/by/3.0/)] via Poly Pizza
+-   ###### [Agile knight](https://poly.pizza/m/7aYuk5Rdlr-) by [Spiros Koutsourelis](https://poly.pizza/u/Spiros Koutsourelis) [[CC-BY](https://creativecommons.org/licenses/by/3.0/)] via Poly Pizza
 
-* ###### [Viking](https://poly.pizza/m/eVHUob4AIM3) by [Steve Schofield](https://poly.pizza/u/Steve Schofield) [[CC-BY](https://creativecommons.org/licenses/by/3.0/)] via Poly Pizza
+-   ###### [Viking](https://poly.pizza/m/eVHUob4AIM3) by [Steve Schofield](https://poly.pizza/u/Steve Schofield) [[CC-BY](https://creativecommons.org/licenses/by/3.0/)] via Poly Pizza
 
-* ###### [Knight](https://poly.pizza/m/1TnT5Xc6vq) by [Vaporworks](https://poly.pizza/u/Vaporworks) [[CC-BY](https://creativecommons.org/licenses/by/3.0/)] via Poly Pizza
+-   ###### [Knight](https://poly.pizza/m/1TnT5Xc6vq) by [Vaporworks](https://poly.pizza/u/Vaporworks) [[CC-BY](https://creativecommons.org/licenses/by/3.0/)] via Poly Pizza
 
-* ###### [Gold Rocks](https://poly.pizza/m/49NgnJzOHc) by[Quaternius](https://poly.pizza/u/Quaternius)
+-   ###### [Gold Rocks](https://poly.pizza/m/49NgnJzOHc) by[Quaternius](https://poly.pizza/u/Quaternius)
 
-*  [Gold Rocks.glb](..\..\Users\kurbaniec\Downloads\Gold Rocks.glb) 
+-   [Gold Rocks.glb](..\..\Users\kurbaniec\Downloads\Gold Rocks.glb)

@@ -7,7 +7,8 @@
     "scripts": {
         "start": "webpack-dev-server --mode development",
         "build": "webpack --mode production",
-        "test:live": "webpack-dev-server --mode development --env test"
+        "test:live": "webpack-dev-server --mode development --env test",
+        "prettier": "prettier --write ."
     },
     "dependencies": {
         "@babylonjs/core": "^5.40.0",
@@ -22,6 +23,7 @@
         "file-loader": "^6.2.0",
         "html-webpack-plugin": "^5.5.0",
         "mini-css-extract-plugin": "^2.4.5",
+        "prettier": "2.8.3",
         "remotedev": "^0.2.9",
         "sass": "^1.43.4",
         "sass-loader": "^12.3.0",

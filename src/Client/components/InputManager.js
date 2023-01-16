@@ -1,13 +1,13 @@
-﻿import {KeyboardEventTypes} from "@babylonjs/core";
+﻿import { KeyboardEventTypes } from "@babylonjs/core";
 
 export const Input = {
-    Up: 'Up',
-    Down: 'Down',
-    Left: 'Left',
-    Right: 'Right',
-    Enter: 'Enter',
-    Escape: 'Escape'
-}
+    Up: "Up",
+    Down: "Down",
+    Left: "Left",
+    Right: "Right",
+    Enter: "Enter",
+    Escape: "Escape",
+};
 
 export class InputManager {
     /**
@@ -25,26 +25,24 @@ export class InputManager {
             // console.log(kbInfo.event);
             switch (kbInfo.event.keyCode) {
                 case 87: // W
-                    callback(Input.Up)
+                    callback(Input.Up);
                     break;
                 case 83: // S
-                    callback(Input.Down)
+                    callback(Input.Down);
                     break;
                 case 65: // A
-                    callback(Input.Left)
+                    callback(Input.Left);
                     break;
                 case 68: // D
-                    callback(Input.Right)
+                    callback(Input.Right);
                     break;
                 case 32: // Space
-                    callback(Input.Enter)
+                    callback(Input.Enter);
                     break;
                 case 27: // Escape
-                    callback(Input.Escape)
+                    callback(Input.Escape);
                     break;
             }
-        })
+        });
     }
-
-
 }
