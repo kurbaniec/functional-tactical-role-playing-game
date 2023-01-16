@@ -24,7 +24,7 @@ module PlayerOverseePhase =
             printfn "Available moves"
             printfn $"%A{availableMoves}"
 
-            let result = PlayerMoveSelection
+            let results =  [ PlayerMoveSelection ]
 
             let phase =
                 PlayerMovePhase
@@ -36,7 +36,7 @@ module PlayerOverseePhase =
                     phase = phase
                     previous = Some restoreState }
 
-            ([ result ], state)
+            (results, state)
 
 
     let update (msg: GameMessage) (state: GameState) : GameStateUpdate =
@@ -56,7 +56,10 @@ module PlayerMovePhase =
 
             let restoreState =
                 { state = state
-                  undoResults = [ CharacterUpdate(characterToMove.id); PlayerOversee ] }
+                  undoResults = [
+                      CharacterUpdate(characterToMove.id); PlayerOversee
+                      PlayerMoveSelection
+                  ] }
 
             let board = state |> GameState.board |> Board.moveCharacter characterToMove.id pos
             let state = { state with board = board }
@@ -95,7 +98,7 @@ module PlayerMovePhase =
                                      preview = None })
                 |> List.choose id
 
-            let msg =
+            let results =
                 [ CharacterUpdate(characterToMove.id)
                   // Send action state select message
                   PlayerActionSelection ]
@@ -108,7 +111,7 @@ module PlayerMovePhase =
                               availableActions = availableActions }
                     previous = Some restoreState }
 
-            (msg, state)
+            (results, state)
 
 
     let update (msg: GameMessage) (state: GameState) (phase: PlayerMove) : GameStateUpdate =
@@ -118,6 +121,8 @@ module PlayerMovePhase =
         | _ -> state |> GameState.toEmptyUpdateWithMsg $"Unsupported message {msg}"
 
 module PlayerActionSelectPhase =
+    let undoMoveCharacter (p: Player) (state: GameState) : GameStateUpdate = state |> GameState.toPreviousState
+
     let private precalculateAction
         (selectableAction: SelectableAction)
         (thisCharacter: Character)
@@ -156,7 +161,7 @@ module PlayerActionSelectPhase =
             let selectableAction = precalculateAction selectableAction phase.character state
 
             // E.g. after attack enemy has xyz hp
-            let msg = [ PlayerAction ]
+            let results = [ PlayerAction ]
 
             let phase =
                 PlayerActionPhase
@@ -169,10 +174,11 @@ module PlayerActionSelectPhase =
                     phase = phase
                     previous = Some restoreState }
 
-            (msg, state)
+            (results, state)
 
     let update (msg: GameMessage) (state: GameState) (phase: PlayerActionSelect) : GameStateUpdate =
         match msg with
+        | UndoMoveCharacter p -> undoMoveCharacter p state
         | SelectAction (p, a) -> selectAction p a state phase
         | _ -> state |> GameState.toEmptyUpdateWithMsg $"Unsupported message {msg}"
 
@@ -220,14 +226,14 @@ module PlayerActionPhase =
             | Some oc -> actionWithChanges oc
             | None -> actionWithoutChanges
 
-        let stateCheck msgAndState =
-            let (msg, state) = msgAndState
+        let stateCheck resultsAndState =
+            let results, state = resultsAndState
 
             if state |> GameState.isDefeated oppositePlayer then
                 // Game End!
                 match player with
-                | Player1 -> (msg @ [ PlayerWin ], { state with phase = PlayerWinPhase })
-                | Player2 -> (msg @ [ PlayerWin ], { state with phase = PlayerWinPhase })
+                | Player1 -> (results @ [ PlayerWin ], { state with phase = PlayerWinPhase })
+                | Player2 -> (results @ [ PlayerWin ], { state with phase = PlayerWinPhase })
             else
                 let awaitingTurns =
                     state.awaitingTurns |> Map.remove (thisCharacter |> Character.id)
@@ -242,7 +248,7 @@ module PlayerActionPhase =
                             awaitingTurns = awaitingTurns
                             previous = None }
 
-                    (msg @ [ PlayerOversee ], state)
+                    (results @ [ PlayerOversee ], state)
                 else
                     // Player still has characters to move
                     let state =
@@ -251,7 +257,7 @@ module PlayerActionPhase =
                             awaitingTurns = awaitingTurns
                             previous = None }
 
-                    (msg @ [ PlayerOversee ], state)
+                    (results @ [ PlayerOversee ], state)
 
 
         cid

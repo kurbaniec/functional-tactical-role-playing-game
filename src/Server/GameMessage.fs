@@ -20,6 +20,9 @@ let fromDeselectCharacterDto (p: Player): GameMessage =
 let fromMoveCharacterDto (p: Player) (pos: PositionDto): GameMessage =
     MoveCharacter (p, fromPositionDto pos)
 
+let fromUndoMoveCharacterDto (p: Player): GameMessage =
+    UndoMoveCharacter (p)
+
 let fromSelectActionDto (p: Player) (actionName: string): GameMessage =
    SelectAction (p, ActionName actionName)
 
@@ -34,8 +37,8 @@ let fromDto (p: Player) (msg: IMessage): GameMessage =
     | SelectCharacterDto c -> fromSelectCharacterDto p c
     | DeselectCharacterDto -> fromDeselectCharacterDto p
     | MoveCharacterDto pos -> fromMoveCharacterDto p pos
+    | UndoMoveCharacterDto -> fromUndoMoveCharacterDto p
     | SelectActionDto an -> fromSelectActionDto p an
     | DeselectActionDto -> fromDeselectActionDto p
     | PerformActionDto cid -> fromPerformActionDto p cid
-    | _ -> failwith "fromDto"
 

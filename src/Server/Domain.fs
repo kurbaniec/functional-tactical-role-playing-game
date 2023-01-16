@@ -159,6 +159,7 @@ type GameMessage =
     | SelectCharacter of Player * CharacterId
     | DeselectCharacter of Player
     | MoveCharacter of Player * Position
+    | UndoMoveCharacter of Player
     | SelectAction of Player * ActionName
     | DeselectAction of Player
     | PerformAction of Player * CharacterId

@@ -3,25 +3,9 @@ namespace Shared
 open System
 open Microsoft.FSharp.Core
 
-type Todo = { Id: Guid; Description: string }
-
-module Todo =
-    let isValid (description: string) =
-        String.IsNullOrWhiteSpace description |> not
-
-    let create (description: string) =
-        { Id = Guid.NewGuid()
-          Description = description }
-
 module Route =
     let builder typeName methodName =
         sprintf "/api/%s/%s" typeName methodName
-
-type ITodosApi =
-    { getTodos: unit -> Async<Todo list>
-      addTodo: Todo -> Async<Todo> }
-
-
 
 // Based on Enterprise Tic-Tac-Toe Talk @ 14.55 (https://vimeo.com/131196782)
 // Make UI life easier by explicitly returning changes with each move
@@ -77,6 +61,7 @@ module DomainDto =
         | SelectCharacterDto of CharacterIdDto
         | DeselectCharacterDto
         | MoveCharacterDto of PositionDto
+        | UndoMoveCharacterDto
         | SelectActionDto of SelectableActionDto
         | DeselectActionDto
         | PerformActionDto of CharacterIdDto
@@ -134,6 +119,13 @@ module DomainDto =
         | PlayerWinResult of PlayerWinResult
         | UnsupportedResult of ErrorMsg
 
+    let createSelectCharacterMsg characterId = SelectCharacterDto characterId
+    let createDeselectCharacterMsg () = DeselectCharacterDto
+    let createMoveCharacterMsg positionDto = MoveCharacterDto positionDto
+    let createUndoMoveCharacterMsg () = UndoMoveCharacterDto
+    let createSelectActionMsg action = SelectActionDto action
+    let createDeselectActionMsg () = DeselectActionDto
+    let createPerformActionMsg characterId = PerformActionDto characterId
 
 
 open DomainDto

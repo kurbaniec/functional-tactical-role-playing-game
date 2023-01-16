@@ -1,13 +1,16 @@
 ﻿// See: https://github.com/fable-compiler/fable3-samples/blob/main/interopFableFromJS/src/index.js
-import {
-    init,
-    pollServer,
-    updateServer,
-} from "./output/Index";
+import { init, pollServer, updateServer } from "./output/Index";
 import {
     GameInfo,
     DomainDto_IMessage,
     DomainDto_IResult,
+    DomainDto_createSelectCharacterMsg,
+    DomainDto_createDeselectCharacterMsg,
+    DomainDto_createMoveCharacterMsg,
+    DomainDto_createSelectActionMsg,
+    DomainDto_createPerformActionMsg,
+    DomainDto_createDeselectActionMsg,
+    DomainDto_createUndoMoveCharacterMsg,
 } from "./output/Shared/Shared";
 import {
     boardPosToVec3,
@@ -61,7 +64,7 @@ class GameUI {
                 const character = this.findCharacter(this.cursor.positionDto);
                 if (!character) return;
                 updateServer(
-                    new DomainDto_IMessage(0, [character.id]),
+                    DomainDto_createSelectCharacterMsg(character.id),
                     this.gameInfo
                 );
             } else {
@@ -79,10 +82,15 @@ class GameUI {
         this.gameState.update = (input) => {
             if (input === Input.Enter) {
                 const pos = this.cursor.positionDto;
-                updateServer(new DomainDto_IMessage(2, pos), this.gameInfo);
-            }
-            if (input === Input.Escape) {
-                updateServer(new DomainDto_IMessage(1), this.gameInfo);
+                updateServer(
+                    DomainDto_createMoveCharacterMsg(pos),
+                    this.gameInfo
+                );
+            } else if (input === Input.Escape) {
+                updateServer(
+                    DomainDto_createDeselectCharacterMsg(),
+                    this.gameInfo
+                );
             } else {
                 this.cursor.moveCursor(input);
             }
@@ -99,7 +107,12 @@ class GameUI {
             if (input === Input.Enter) {
                 const selection = this.selection.currentSelection();
                 updateServer(
-                    new DomainDto_IMessage(3, selection),
+                    DomainDto_createSelectActionMsg(selection),
+                    this.gameInfo
+                );
+            } else if (input === Input.Escape) {
+                updateServer(
+                    DomainDto_createUndoMoveCharacterMsg(),
                     this.gameInfo
                 );
             } else {
@@ -120,12 +133,15 @@ class GameUI {
                 const character = this.findCharacter(this.cursor.positionDto);
                 if (!character) return;
                 updateServer(
-                    new DomainDto_IMessage(5, [character.id]),
+                    DomainDto_createPerformActionMsg(character.id),
                     this.gameInfo
                 );
             }
             if (input === Input.Escape) {
-                updateServer(new DomainDto_IMessage(4), this.gameInfo);
+                updateServer(
+                    DomainDto_createDeselectActionMsg(),
+                    this.gameInfo
+                );
             } else {
                 this.cursor.moveCursor(input);
             }
