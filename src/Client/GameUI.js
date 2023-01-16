@@ -200,12 +200,14 @@ class GameUI {
      */
     highlightPositions(positions) {
         const highlightMaterial = new StandardMaterial("highlightmat", this.engineInfo.scene);
-        highlightMaterial.diffuseColor = Color3.Teal();
+        highlightMaterial.diffuseColor = Color3.Purple();
         highlightMaterial.emissiveColor = new Color3(0.1, 0.1, 0.1);
-        highlightMaterial.alpha = 0.3;
+        highlightMaterial.alpha = 0.7;
         this.highlightMeshes = []
         for (const [i, pos] of positions.entries()) {
             const mesh = MeshBuilder.CreateBox(`highlight${i}`, {depth: 1, width: 1, height: 0.1}, this.engineInfo.scene);
+            mesh.renderingGroupId = 1
+            mesh.alphaIndex = 1
             mesh.material = highlightMaterial
             mesh.position = positionDtoToVec3(pos)
             this.highlightMeshes.push(mesh)

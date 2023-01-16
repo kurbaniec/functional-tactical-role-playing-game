@@ -1,4 +1,12 @@
-﻿import {Color3, MeshBuilder, SceneLoader, StandardMaterial, TransformNode, Vector3} from "@babylonjs/core";
+﻿import {
+    AbstractMesh,
+    Color3, HighlightLayer,
+    MeshBuilder,
+    SceneLoader,
+    StandardMaterial, Tools,
+    TransformNode,
+    Vector3
+} from "@babylonjs/core";
 import {eachRecursive, Player, positionDtoToVec3, setVec3FromPositionDto, vec3ToPositionDto} from "../Utils";
 import "@babylonjs/loaders/glTF"
 
@@ -10,31 +18,38 @@ class Character {
      */
     constructor(model, scene) {
         this.model = model
-        const mesh = MeshBuilder.CreateBox(this.model.id, {depth: 0.5, width: 0.5, height: 0.8}, scene);
-        mesh.position.y = 1.2 / 2
+        const mesh = MeshBuilder.CreateBox(this.model.id, {depth: 1, width: 1, height: 0.01}, scene);
+        mesh.position.y = 0
         mesh.position.addInPlace(positionDtoToVec3(this.model.position))
         const cursorMaterial = new StandardMaterial(`mat${this.model.id}`, scene);
         if (this.model.player === Player.Player1)
-            cursorMaterial.diffuseColor = Color3.Blue();
-        else
             cursorMaterial.diffuseColor = Color3.Green();
+        else
+            cursorMaterial.diffuseColor = Color3.Red();
         cursorMaterial.emissiveColor = new Color3(0.1, 0.1, 0.1);
-        cursorMaterial.alpha = 0.75;
+        cursorMaterial.alpha = 0.35;
         mesh.material = cursorMaterial;
         mesh.renderingGroupId = 0
         mesh.alphaIndex = 0
         this.mesh = mesh
 
+        const modelFile = queryModelFile(this.model.classification)
         SceneLoader.ImportMesh(
-            "", "./", "support.glb", scene, (newMeshes) =>  {
-            const importRoot = new TransformNode("")
+            "", "./", modelFile.filename, scene, (newMeshes) =>  {
+            const modelRootMesh = new AbstractMesh(`root-${model.id}`)
             // scene.stopAnimation(newMeshes[0]);
             newMeshes.forEach(m => {
                 // scene.stopAnimation(m)
-                m.setParent(importRoot)
+                // m.position = this.mesh.position
+                m.setParent(modelRootMesh)
             })
 
-            importRoot.scaling = new Vector3(0.5, 0.5, 0.5)
+            modelFile.transform(modelRootMesh)
+            if (this.model.player === Player.Player1) {
+                modelRootMesh.rotation.y += Tools.ToRadians(180)
+            }
+
+            // modelRootMesh.scaling = new Vector3(0.5, 0.5, 0.5)
 
             // Stop all mesh animations
             // See: https://github.com/BabylonJS/Babylon.js/issues/4514
@@ -42,6 +57,11 @@ class Character {
                 group.stop()
                 group.reset()
             })
+
+            const meshPosWithoutHeight = this.mesh.position.clone()
+            meshPosWithoutHeight.y = modelRootMesh.position.y
+            modelRootMesh.position = meshPosWithoutHeight
+            this.mesh.addChild(modelRootMesh)
         })
 
     }
@@ -68,6 +88,32 @@ class Character {
     }
 
     dispose() { this.mesh.dispose() }
+}
+
+class ModelFile {
+    constructor(filename, transform) {
+        this.filename = filename
+        this.transform = transform
+    }
+}
+
+function queryModelFile(cls) {
+    console.log("model to file name", cls)
+    // ["Axe", 0], ["Sword", 1], ["Lance", 2], ["Bow", 3], ["Support", 4
+    let fileName = new ModelFile(
+        "support.glb", (m) => m.scaling = new Vector3(0.4, 0.4, 0.4)
+    )
+    if (cls === 0) fileName = new ModelFile("axe.glb", (m) => {
+        m.scaling = new Vector3(0.5, 0.5, 0.5)
+        m.position.addInPlace(new Vector3(0, 0.75, 0))
+        m.rotation.y = Tools.ToRadians(-90)
+    })
+    else if (cls === 1) fileName = new ModelFile("sword.glb", (m) => {
+        m.scaling = new Vector3(0.38, 0.38, 0.38)
+        m.position.addInPlace(new Vector3(0, 0.95, 0))
+        m.rotation.y = Tools.ToRadians(-90)
+    })
+    return fileName
 }
 
 export { Character }

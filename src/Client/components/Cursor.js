@@ -14,8 +14,8 @@ class Cursor {
         // cursorMaterial.needDepthPrePass = false
         // Render later than other transparent meshes
         // See: https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering
-        mesh.renderingGroupId = 1
-        mesh.alphaIndex = 1
+        mesh.renderingGroupId = 3
+        mesh.alphaIndex = 3
         this.mesh = mesh
     }
 
