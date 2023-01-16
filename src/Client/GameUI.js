@@ -12,15 +12,16 @@ import {
     vec3ToPositionDto
 } from "./Utils";
 import {
+    AbstractMesh,
     ArcRotateCamera,
     Color3, Color4,
     Engine,
     HemisphericLight,
     MeshBuilder,
     MultiMaterial,
-    Scene,
+    Scene, SceneLoader,
     StandardMaterial,
-    SubMesh,
+    SubMesh, Tools,
     Vector3
 } from "@babylonjs/core";
 import {Input, InputManager} from "./components/InputManager"
@@ -358,14 +359,28 @@ class GameUI {
         // Set subMeshes of the tiled ground
         tiledGround.subMeshes = [];
         let base = 0;
-
         // meshes are built from bottom to top, right to left
         // let tiles = boardInfo.tiles.map(cols => cols.reverse())
-        let tiles = boardInfo.tiles.reverse()
+        const tiles = [...boardInfo.tiles].reverse()
+        // mountain meshes
+        const mountainMeshes = ["mountain1.glb", "mountain2.glb"]
         for (let col = boardInfo.col - 1; col >= 0; col--) {
             for (let row = boardInfo.row - 1; row >= 0; row--) {
                 tiledGround.subMeshes.push(new SubMesh(tiles[row][col], 0, verticesCount, base, tileIndicesLength, tiledGround));
                 base += tileIndicesLength;
+                // Load "mountain" mesh
+                if (boardInfo.tiles[row][col] !== 2) continue
+                const mountainMesh = mountainMeshes[Math.floor(Math.random()*mountainMeshes.length)]
+                SceneLoader.ImportMesh(
+                    "", "./", mountainMesh, scene, (newMeshes) =>  {
+                        const modelRootMesh = new AbstractMesh(`root-mountain-${row}-${col}`)
+                        newMeshes.forEach(m => {
+                            m.setParent(modelRootMesh)
+                        })
+                        modelRootMesh.scaling = new Vector3(1.35, 1.35, 1.35)
+                        modelRootMesh.rotation.y = Tools.ToRadians(Math.random()*360)
+                        modelRootMesh.position = boardPosToVec3(row, col)
+                    })
             }
         }
 
