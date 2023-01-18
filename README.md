@@ -1,23 +1,21 @@
-# functional-tactical-role-playing-game
+<h1 align="center">
+  <!--<br>
+    <img src=".img/game.png" alt="game image" width="500">
+  <br>-->
+  <code>functional-tactical-role-playing-game</code> 🕹️
+  <br>
+</h1>
+<h4 align="center">Simple turn-based fantasy strategy game written in F#</h4>
 
-# SAFE Template
-
-This template can be used to generate a full-stack web application using the [SAFE Stack](https://safe-stack.github.io/). It was created using the dotnet [SAFE Template](https://safe-stack.github.io/docs/template-overview/). If you want to learn more about the template why not start with the [quick start](https://safe-stack.github.io/docs/quickstart/) guide?
-
-## Install pre-requisites
-
-You'll need to install the following pre-requisites in order to build SAFE applications
-
--   [.NET Core SDK](https://www.microsoft.com/net/download) 6.0 or higher
--   [Node 16](https://nodejs.org/en/download/)
-
-## Starting the application
+## 🛠️ Build
 
 Before you run the project **for the first time only** you must install dotnet "local tools" with this command:
 
 ```bash
 dotnet tool restore
 ```
+
+## 🚀 Run
 
 To concurrently run the server and the client components in watch mode use the following command:
 
@@ -27,34 +25,27 @@ dotnet run
 
 Then open `http://localhost:8080` in your browser.
 
-The build project in root directory contains a couple of different build targets. You can specify them after `--` (target name is case-insensitive).
+To play the game, two tabs needs to be open for each player.
 
-To run concurrently server and client tests in watch mode (you can run this command in parallel to the previous one in new terminal):
+## ✨ Features
 
-```bash
-dotnet run -- RunTests
-```
+Game controls:
 
-Client tests are available under `http://localhost:8081` in your browser and server tests are running in watch mode in console.
+- `W A S D` - Move Cursor / Selection
+- `Space` - Confirm Action
+- `Escape` - Undo Action
+- `Arrow Key Up Down Left Right` - Move Camera
+- `Mouse Scroll` - Move Camera
 
-Finally, there are `Bundle` and `Azure` targets that you can use to package your app and deploy to Azure, respectively:
+-   https://elmish.github.io/elmish/)
 
-```bash
-dotnet run -- Bundle
-dotnet run -- Azure
-```
+## 👍Special Thanks
 
-## SAFE Stack Documentation
+* [Enterprise Tic-Tac-Toe](https://fsharpforfunandprofit.com/ettt/)
+* [Domain Driven Design](https://fsharpforfunandprofit.com/ddd/)
+* [Flow Field Pathfinding for Tower Defense](https://www.redblobgames.com/pathfinding/tower-defense/)
 
-If you want to know more about the full Azure Stack and all of it's components (including Azure) visit the official [SAFE documentation](https://safe-stack.github.io/docs/).
-
-You will find more documentation about the used F# components at the following places:
-
--   [Saturn](https://saturnframework.org/)
--   [Fable](https://fable.io/docs/)
--   [Elmish](https://elmish.github.io/elmish/)
-
-## Sources
+### Assets
 
 -   ###### [Animated Wizard](https://poly.pizza/m/kttbFvCl2C) by [Quaternius](https://poly.pizza/u/Quaternius) [[CC-BY](https://creativecommons.org/licenses/by/3.0/)] via Poly Pizza
 
@@ -64,6 +55,6 @@ You will find more documentation about the used F# components at the following p
 
 -   ###### [Knight](https://poly.pizza/m/1TnT5Xc6vq) by [Vaporworks](https://poly.pizza/u/Vaporworks) [[CC-BY](https://creativecommons.org/licenses/by/3.0/)] via Poly Pizza
 
--   ###### [Gold Rocks](https://poly.pizza/m/49NgnJzOHc) by[Quaternius](https://poly.pizza/u/Quaternius)
+-   ###### [Rock](https://poly.pizza/m/RtLRqYjfMs) by [Quaternius](https://poly.pizza/u/Quaternius)
 
--   [Gold Rocks.glb](..\..\Users\kurbaniec\Downloads\Gold Rocks.glb)
+- ###### [Gold Rocks](https://poly.pizza/m/49NgnJzOHc) by [Quaternius](https://poly.pizza/u/Quaternius)

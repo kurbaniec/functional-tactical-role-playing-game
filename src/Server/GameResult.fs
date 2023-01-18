@@ -6,6 +6,11 @@ open FSharpx.Collections
 open Utils
 open Position
 
+// (Mutable) .NET Base Classes are used instead of FSharp.Core in order to deserialize
+// into common JavaScript data structures (e.g. C# System.Collections.Generic.List -> Js Array)
+// which streamlines working with the DTOs in non functional parts of the client (e.g. Babylon.js UI)
+// See: https://fable.io/docs/dotnet/compatibility.html
+
 let recipient (result: GameResult) (state: GameState) : Recipient =
     let turnOf = state |> GameState.turnOf
 

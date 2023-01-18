@@ -1,6 +1,7 @@
 module Server
 
 open System.Collections.Generic
+open FSharpx.Collections
 open Fable.Remoting.Server
 open Fable.Remoting.Giraffe
 open Microsoft.AspNetCore.Http
@@ -16,6 +17,9 @@ type Queue<'V> = System.Collections.Generic.Queue<'V>
 type GameId = System.Guid
 
 module GameCoordinator =
+    // Mutability is required to "imitate" a persistence store
+    // Same as SAFE example
+    // See: https://github.com/SAFE-Stack/SAFE-template/blob/master/Content/default/src/Server/Server.fs
     let private join = Queue<GameId>()
     let private games = Dictionary<GameId, Game>()
     let private player1Results = Dictionary<GameId, Queue<IResult>>()
@@ -43,13 +47,15 @@ module GameCoordinator =
             | Player2 -> player2Results[ game.id ].Enqueue(resultDto)
 
     let dequeResult (player: PlayerDto) (gameId: GameId) (_: HttpContext) =
-        let queue =
-            match player with
-            | PlayerDto.Player1 -> player1Results[gameId]
-            | PlayerDto.Player2 -> player2Results[gameId]
-            | _ -> System.ArgumentOutOfRangeException() |> raise
+        match player with
+        | PlayerDto.Player1 -> player1Results |> Some
+        | PlayerDto.Player2 -> player2Results |> Some
+        | _ -> None
+        |> Option.map (fun results -> results |> Dictionary.tryFind gameId)
+        |> Option.flatten
+        |> Option.map (fun queue -> if queue.Count = 0 then None else queue.Dequeue() |> Some)
+        |> Option.flatten
 
-        if queue.Count = 0 then None else queue.Dequeue() |> Some
 
     let updateGame (game: Game) : unit = games[ game.id ] <- game
 
