@@ -116,7 +116,6 @@ class ModelFile {
 }
 
 function queryModelFile(cls) {
-    console.log("model to file name", cls);
     // ["Axe", 0], ["Sword", 1], ["Lance", 2], ["Bow", 3], ["Support", 4
     let fileName = new ModelFile(
         "support.glb",

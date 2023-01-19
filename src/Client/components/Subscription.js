@@ -4,7 +4,7 @@
     MsgModule_characterMsg,
     MsgModule_startedMsg,
     MsgModule_winMsg,
-} from "../output/Index";
+} from "../output/Interface";
 
 export function sendStartedMsg() {
     const e = new CustomEvent("uiSub", { detail: MsgModule_startedMsg() });

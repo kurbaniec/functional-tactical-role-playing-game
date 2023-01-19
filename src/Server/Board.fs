@@ -97,6 +97,8 @@ let rec inspectNeighbors
     (foundTiles: FoundTiles)
     (neighbors: Neighbors)
     : (Frontier * FoundTiles * int) =
+    // Update `foundTiles` if for position a tile is not yet set,
+    // otherwise ignore as position / tile has been already traversed
     match neighbors with
     | [] -> (frontier, foundTiles, currentDistance)
     | neighbor :: neighbors ->
@@ -124,6 +126,9 @@ let rec doPathfinding
     (predicate: Tile -> bool)
     (b: Board)
     : FoundTiles =
+    // If distance has not yet reached `maxDistance` get neighbor tile positions,
+    // filter them with the given `predicate` and update `frontier` & `foundTiles`
+    // via `inspectNeighbors`
     match frontier with
     | [] -> foundTiles
     | current :: frontier ->
@@ -146,6 +151,7 @@ let pathfinding
     (extract: (FoundTiles) -> 'U)
     (b: Board)
     : 'U =
+    // Starts recursive pathfinding from given parameters
     let frontier = [ start ]
     let startTile = findTile start b
     let foundTiles = Map [ (start, { tile = startTile; distance = 0 }) ]
@@ -172,10 +178,6 @@ let find (startPos: Position) (d: Distance) (predicate: Tile -> bool) (extract: 
 
 
 let create (row: Row) (col: Col) : Board =
-    // let columns =
-    //     [ for i in 0 .. (Col.value col) -> (Col i, Tile.Land None) ]
-    //     |> List.mapi (fun i x -> if i = 1 || i = 5 then (Col i, Tile.Water None) else x)
-    //     |> Map.ofList
     let maxRow = row |> Row.value |> (+) -1
     let maxCol = col |> Col.value |> (+) -1
 

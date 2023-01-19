@@ -14,21 +14,21 @@ module PlayerOverseePhase =
 
         match character with
         | None -> ([], state)
-        | Some c ->
+        | Some character ->
             let restoreState =
                 { state = state
                   undoResults = [ PlayerOversee ] }
 
-            let availableMoves = state |> GameState.board |> Board.availablePlayerMoves c
+            let availableMoves = state |> GameState.board |> Board.availablePlayerMoves character
 
             printfn "Available moves"
             printfn $"%A{availableMoves}"
 
-            let results =  [ PlayerMoveSelection ]
+            let results = [ PlayerMoveSelection ]
 
             let phase =
                 PlayerMovePhase
-                    { character = c
+                    { character = character
                       availableMoves = availableMoves }
 
             let state =
@@ -56,17 +56,18 @@ module PlayerMovePhase =
 
             let restoreState =
                 { state = state
-                  undoResults = [
-                      CharacterUpdate(characterToMove.id); PlayerOversee
-                      PlayerMoveSelection
-                  ] }
+                  undoResults = [ CharacterUpdate(characterToMove.id); PlayerOversee; PlayerMoveSelection ] }
 
             let board = state |> GameState.board |> Board.moveCharacter characterToMove.id pos
             let state = { state with board = board }
 
+
+            // Filter for actions that can be executed
+            // An action can be executed if it can be performed at least on one character
+
             // Look for all tiles in distance
             let boardPredicate (t: Tile) = true
-            // Filter for actions that can be executed
+
             let boardActionExtractor (actionPredicate: Action.ApplicableToPredicate) (foundTiles: Board.FoundTiles) =
                 foundTiles
                 |> Board.FoundTiles.tiles
@@ -128,16 +129,15 @@ module PlayerActionSelectPhase =
         (thisCharacter: Character)
         (gameState: GameState)
         =
+        // Precalculate action result on all character it can be applied on
+        selectableAction.selectableCharacters
+        |> List.map (fun otherCharacterId ->
+            let otherCharacter = gameState |> GameState.fromCharacterId otherCharacterId |> fst
 
-        List.map
-            (fun otherCharacterId ->
-                let otherCharacter = gameState |> GameState.fromCharacterId otherCharacterId |> fst
-
-                Action.performAction thisCharacter otherCharacter selectableAction.action
-                |> function
-                    | None -> None
-                    | Some otherCharacterAfterAction -> Some(otherCharacterId, otherCharacterAfterAction))
-            selectableAction.selectableCharacters
+            Action.performAction thisCharacter otherCharacter selectableAction.action
+            |> function
+                | None -> None
+                | Some otherCharacterAfterAction -> Some(otherCharacterId, otherCharacterAfterAction))
         |> List.choose id
         |> fun charactersAfterAction ->
             if (charactersAfterAction |> List.isEmpty) then
@@ -189,8 +189,6 @@ module PlayerActionPhase =
         let thisCharacter = phase.character
         let selectableAction = phase.action
         let actionPreview = selectableAction.preview
-        let action = selectableAction.action
-        let actionType = action.kind
 
         let oppositePlayer = player |> Player.opposite
 

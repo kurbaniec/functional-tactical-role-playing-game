@@ -1,24 +1,25 @@
 module App
 
-open System
 open Elmish
 open Elmish.React
 
 #if DEBUG
 open Elmish.Debug
 open Elmish.HMR
-open Fable.Core
 #endif
 
+open Index
 
 
-Program.mkProgram Index.appInit Index.appUpdate Index.view
-#if DEBUG
+Program.mkProgram Interface.appInit Interface.appUpdate Interface.view
+// #if DEBUG
 // |> Program.withConsoleTrace
-#endif
+// #endif
 |> Program.withReactSynchronous "elmish-app"
-|> Program.withSubscription Index.uiSub
+|> Program.withSubscription Interface.uiSub
 // #if DEBUG
 // |> Program.withDebugger
 // #endif
 |> Program.run
+
+let game = GameUI.create ()

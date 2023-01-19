@@ -162,14 +162,12 @@ class GameUI {
 
     /** @param {DomainDto_CharacterUpdateResult} result */
     onCharacterUpdate(result) {
-        console.log(result);
         const character = this.characters.get(result.character.id);
         if (character) character.updateModel(result.character);
     }
 
     /** @param {DomainDto_CharacterDefeatResult} result */
     onCharacterDefeat(result) {
-        console.log("defeat", JSON.stringify(result));
         const character = this.characters.get(result.character);
         if (!character) return;
         character.dispose();
@@ -363,7 +361,6 @@ class GameUI {
             scene
         );
 
-        console.log(startInfo.board);
         /** @type {{row: number, col: number}} **/
         const boardInfo = {
             row: startInfo.board.length,
@@ -482,7 +479,6 @@ class GameUI {
         for (const c of startInfo.characters) {
             const newCharacter = new Character(c, scene);
             characters.set(c.id, newCharacter);
-            let pos = newCharacter.positionDto;
         }
 
         /** @type {{engine: Engine, scene: Scene}} **/
@@ -494,19 +490,6 @@ class GameUI {
         sendStartedMsg();
 
         return new GameUI(gameInfo, gameState, characters, engineInfo);
-    }
-
-    start(startResult) {
-        console.log("Baum");
-        console.log(startResult);
-
-        const char = startResult.characters[0].character;
-        console.log(char);
-        const properties = char.properties;
-        console.log(properties);
-        console.log(properties.get("1"));
-
-        console.log(startResult.constructor.name);
     }
 }
 
